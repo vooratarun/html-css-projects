@@ -1,0 +1,35 @@
+<div class="post">
+  <div class="post__top">
+    <img class="user__avatar post__avatar" [src]="post.avatar" [alt]="post.author + ' avatar'" />
+    <div class="post__topInfo">
+      <h3>{{ post.author }}</h3>
+      <p>{{ post.timestamp }}</p>
+    </div>
+  </div>
+
+  <div class="post__bottom">
+    <p>{{ post.message }}</p>
+  </div>
+
+  <div class="post__image" *ngIf="post.imageUrl">
+    <img [src]="post.imageUrl" [alt]="post.message" />
+  </div>
+
+  <div class="post__options">
+    <div class="post__option">
+      <span class="material-icons">thumb_up</span>
+      <p>Like</p>
+    </div>
+
+    <div class="post__option">
+      <span class="material-icons">chat_bubble_outline</span>
+      <p>Comment</p>
+    </div>
+
+    <div class="post__option">
+      <span class="material-icons">near_me</span>
+      <p>Share</p>
+    </div>
+  </div>
+</div>
+

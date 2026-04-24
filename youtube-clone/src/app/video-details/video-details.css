@@ -1,0 +1,58 @@
+.video-details-page {
+  max-width: 980px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.details-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.details-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.details-thumbnail {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+.details-meta {
+  padding: 16px;
+}
+
+.details-meta h1 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.channel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.channel-row img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.details-error {
+  color: #b71c1c;
+}
+

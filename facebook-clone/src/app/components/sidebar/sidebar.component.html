@@ -1,0 +1,12 @@
+<div class="sidebar">
+  <div class="sidebarRow">
+    <img class="user__avatar" [src]="avatar" alt="User avatar" />
+    <h4>Somanath Goudar</h4>
+  </div>
+
+  <div class="sidebarRow" *ngFor="let item of items">
+    <span class="material-icons">{{ item.icon }}</span>
+    <h4>{{ item.label }}</h4>
+  </div>
+</div>
+

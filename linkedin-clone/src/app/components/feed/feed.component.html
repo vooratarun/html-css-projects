@@ -1,0 +1,64 @@
+<div class="feed">
+  <div class="feed__inputContainer">
+    <div class="feed__input">
+      <i class="material-icons"> create </i>
+      <form>
+        <input type="text" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+
+    <div class="feed__inputOptions">
+      <div class="inputOption">
+        <i style="color: #70b5f9" class="material-icons"> insert_photo </i>
+        <h4>Photo</h4>
+      </div>
+      <div class="inputOption">
+        <i style="color: #e7a33e" class="material-icons"> subscriptions </i>
+        <h4>Video</h4>
+      </div>
+      <div class="inputOption">
+        <i style="color: #c0cbcd" class="material-icons"> event_note </i>
+        <h4>Event</h4>
+      </div>
+      <div class="inputOption">
+        <i style="color: #7fc15e" class="material-icons"> calendar_view_day </i>
+        <h4>Write Article</h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="post" *ngFor="let post of posts; trackBy: trackByPostId">
+    <div class="post__header">
+      <i class="material-icons sidebar__topAvatar"> account_circle </i>
+      <div class="post__info">
+        <h2>{{ post.author }}</h2>
+        <p>{{ post.role }}</p>
+      </div>
+    </div>
+
+    <div class="post__body">
+      <p>{{ post.message }}</p>
+    </div>
+
+    <div class="feed__inputOptions">
+      <div class="inputOption">
+        <i style="color: gray" class="material-icons"> thumb_up </i>
+        <h4>Like</h4>
+      </div>
+      <div class="inputOption">
+        <i style="color: gray" class="material-icons"> comment </i>
+        <h4>Comment</h4>
+      </div>
+      <div class="inputOption">
+        <i style="color: gray" class="material-icons"> share </i>
+        <h4>Share</h4>
+      </div>
+      <div class="inputOption">
+        <i style="color: gray" class="material-icons"> send </i>
+        <h4>Send</h4>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,13 @@
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background-color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+app-root {
+  display: block;
+  min-height: 100%;
+}

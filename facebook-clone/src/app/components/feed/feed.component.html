@@ -1,0 +1,6 @@
+<div class="feed">
+  <app-story-reel [stories]="stories"></app-story-reel>
+  <app-message-sender></app-message-sender>
+  <app-post-card *ngFor="let post of posts" [post]="post"></app-post-card>
+</div>
+

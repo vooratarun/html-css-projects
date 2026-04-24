@@ -1,0 +1,120 @@
+<!-- Header Starts -->
+<div class="header">
+  <div class="header__left">
+    <i id="menu" class="material-icons" (click)="toggleSidebar()">menu</i>
+    <img src="https://cdn.mos.cms.futurecdn.net/8gzcr6RpGStvZFA2qRt4v6.jpg" alt="" />
+  </div>
+
+  <div class="header__search">
+    <form action="" (submit)="$event.preventDefault()">
+      <input
+        type="text"
+        placeholder="Search"
+        [value]="searchQuery"
+        (input)="onSearchInput($event)"
+      />
+      <button><i class="material-icons">search</i></button>
+    </form>
+  </div>
+
+  <div class="header__icons">
+    <i class="material-icons display-this">search</i>
+    <i class="material-icons">videocam</i>
+    <i class="material-icons">apps</i>
+    <i class="material-icons">notifications</i>
+    <a class="header__auth-link" [routerLink]="authRoute">
+      <i class="material-icons display-this">account_circle</i>
+      <span>{{ authLabel }} ({{ authUsername }})</span>
+    </a>
+  </div>
+</div>
+<!-- Header Ends -->
+
+<!-- Main Body Starts -->
+<div class="mainBody">
+  <!-- Sidebar Starts -->
+  <div class="sidebar" [class.show-sidebar]="isSidebarVisible">
+    <div class="sidebar__categories">
+      @for (category of primarySidebarCategories; track category.id) {
+        <app-sidebar-category [icon]="category.icon" [label]="category.label"></app-sidebar-category>
+      }
+    </div>
+    <hr />
+    <div class="sidebar__categories">
+      @for (category of librarySidebarCategories; track category.id) {
+        <app-sidebar-category [icon]="category.icon" [label]="category.label"></app-sidebar-category>
+      }
+    </div>
+    <hr />
+  </div>
+  <!-- Sidebar Ends -->
+
+  <!-- Videos Section -->
+  <div class="videos">
+    <app-video-form
+      [isSubmitting]="isUploadingVideo"
+      [resetKey]="videoFormResetKey"
+      [isEditMode]="isEditMode"
+      [initialData]="selectedVideoForEdit"
+      (submitVideo)="onVideoSubmit($event)"
+    ></app-video-form>
+
+    @if (isEditMode) {
+      <button class="cancel-edit-btn" (click)="onCancelEdit()">Cancel Edit</button>
+    }
+
+    @if (uploadVideoSuccess) {
+      <p class="upload-message success">{{ uploadVideoSuccess }}</p>
+    }
+
+    @if (uploadVideoError) {
+      <p class="upload-message error">{{ uploadVideoError }}</p>
+    }
+
+    <h1>Recommended</h1>
+
+    <div class="videos__container">
+      @if (isLoadingVideos) {
+        <p>Loading videos...</p>
+      } @else if (videosError) {
+        <p>{{ videosError }}</p>
+      } @else {
+        @for (video of filteredVideos; track video.id) {
+          <div class="video">
+            <div class="video__thumbnail">
+              <img [src]="video.thumbnailUrl" [alt]="video.title" />
+              <button class="edit-btn" (click)="onEditVideo(video)" [disabled]="isDeletingVideo" title="Edit">
+                <i class="material-icons">edit</i>
+              </button>
+              <button class="delete-btn" (click)="onDeleteVideo(video)" [disabled]="isDeletingVideo" title="Delete">
+                <i class="material-icons">delete</i>
+              </button>
+            </div>
+            <div class="video__details">
+              <div class="author">
+                <img [src]="video.authorImageUrl" [alt]="video.channelName" />
+              </div>
+              <div class="title">
+                <h3><a class="video-title-link" [routerLink]="['/video', video.id]">{{ video.title }}</a></h3>
+                <a href="">{{ video.channelName }}</a>
+                <span>{{ video.meta }}</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (showNoVideosMessage) {
+          <p>{{ emptyVideosMessage }}</p>
+        }
+      }
+    </div>
+
+    @if (!isLoadingVideos && !videosError && canLoadMoreVideos && filteredVideos.length) {
+      <button class="load-more-btn" [disabled]="isLoadingMore" (click)="onLoadMoreVideos()">
+        {{ isLoadingMore ? 'Loading...' : 'Load More' }}
+      </button>
+    }
+  </div>
+</div>
+<!-- Main Body Ends -->
+

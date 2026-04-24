@@ -1,0 +1,11 @@
+<div class="storyReel">
+  <div
+    class="story"
+    *ngFor="let story of stories"
+    [style.background-image]="'url(' + story.backgroundImage + ')'"
+  >
+    <img class="user__avatar story__avatar" [src]="story.avatar" [alt]="story.title + ' avatar'" />
+    <h4>{{ story.title }}</h4>
+  </div>
+</div>
+

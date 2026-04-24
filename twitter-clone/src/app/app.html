@@ -1,0 +1,75 @@
+<main class="app-shell">
+  <aside class="sidebar" aria-label="Primary">
+    <i class="fab fa-twitter" aria-hidden="true"></i>
+    <div
+      *ngFor="let option of sidebarOptions; trackBy: trackByLabel"
+      class="sidebarOption"
+      [class.active]="option.active"
+    >
+      <span class="material-icons">{{ option.icon }}</span>
+      <h2>{{ option.label }}</h2>
+    </div>
+    <button type="button" class="sidebar__tweet">Tweet</button>
+  </aside>
+  <section class="feed" aria-label="Timeline">
+    <header class="feed__header">
+      <h2>Home</h2>
+    </header>
+    <section class="tweetBox" aria-label="Compose tweet">
+      <form>
+        <div class="tweetbox__input">
+          <img [src]="profileImage" alt="Profile avatar" />
+          <input type="text" placeholder="What's happening?" aria-label="What's happening?" />
+        </div>
+        <button type="button" class="tweetBox__tweetButton">Tweet</button>
+      </form>
+    </section>
+    <article *ngFor="let post of posts; trackBy: trackByPost" class="post">
+      <div class="post__avatar">
+        <img [src]="post.avatar" [alt]="post.displayName + ' avatar'" />
+      </div>
+      <div class="post__body">
+        <div class="post__header">
+          <div class="post__headerText">
+            <h3>
+              {{ post.displayName }}
+              <span class="post__headerSpecial">
+                <span *ngIf="post.verified" class="material-icons post__badge">verified</span>
+                {{ post.username }}
+              </span>
+            </h3>
+          </div>
+          <div class="post__headerDescription">
+            <p>{{ post.description }}</p>
+          </div>
+        </div>
+        <img [src]="post.image" [alt]="post.displayName + ' post image'" />
+        <div class="post__footer" aria-label="Post actions">
+          <span class="material-icons">repeat</span>
+          <span class="material-icons">favorite_border</span>
+          <span class="material-icons">publish</span>
+        </div>
+      </div>
+    </article>
+  </section>
+  <aside class="widgets" aria-label="Search and trends">
+    <div class="widgets__input">
+      <span class="material-icons widgets__searchIcon">search</span>
+      <input type="text" placeholder="Search Twitter" aria-label="Search Twitter" />
+    </div>
+    <div class="widgets__widgetContainer">
+      <h2>What's happening?</h2>
+      <blockquote class="twitter-tweet">
+        <p lang="en" dir="ltr">
+          Sunsets don't get much better than this one over
+          <a href="https://twitter.com/GrandTetonNPS?ref_src=twsrc%5Etfw">&#64;GrandTetonNPS</a>.
+          <a href="https://twitter.com/hashtag/nature?src=hash&amp;ref_src=twsrc%5Etfw">#nature</a>
+          <a href="https://twitter.com/hashtag/sunset?src=hash&amp;ref_src=twsrc%5Etfw">#sunset</a>
+          <a href="http://t.co/YuKy2rcjyU">pic.twitter.com/YuKy2rcjyU</a>
+        </p>
+        &mdash; US Department of the Interior (&#64;Interior)
+        <a href="https://twitter.com/Interior/status/463440424141459456?ref_src=twsrc%5Etfw">May 5, 2014</a>
+      </blockquote>
+    </div>
+  </aside>
+</main>

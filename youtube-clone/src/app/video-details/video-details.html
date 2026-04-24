@@ -1,0 +1,25 @@
+<div class="video-details-page">
+  <div class="details-topbar">
+    <a routerLink="/" class="back-link">Back to videos</a>
+    <a [routerLink]="authRoute" class="back-link">{{ authLabel }}</a>
+  </div>
+
+  @if (isLoading) {
+    <p>Loading video details...</p>
+  } @else if (errorMessage) {
+    <p class="details-error">{{ errorMessage }}</p>
+  } @else if (video) {
+    <div class="details-card">
+      <img class="details-thumbnail" [src]="video.thumbnailUrl" [alt]="video.title" />
+      <div class="details-meta">
+        <h1>{{ video.title }}</h1>
+        <div class="channel-row">
+          <img [src]="video.authorImageUrl" [alt]="video.channelName" />
+          <strong>{{ video.channelName }}</strong>
+        </div>
+        <p>{{ video.meta }}</p>
+      </div>
+    </div>
+  }
+</div>
+

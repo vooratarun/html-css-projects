@@ -1,0 +1,28 @@
+<div class="sidebar">
+  <div class="sidebar__top">
+    <img src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MXwxMjA3fDB8MXxhbGx8fHx8fHx8fA&ixlib=rb-1.2.1&q=80&w=1080" alt="" />
+    <i class="material-icons sidebar__topAvatar"> account_circle </i>
+    <h2>Somanath Goudar</h2>
+    <h4>somugowda8050&#64;gmail.com</h4>
+  </div>
+
+  <div class="sidebar__stats">
+    <div class="sidebar__stat">
+      <p>Who Viewed You</p>
+      <p class="sidebar__statNumber">2,453</p>
+    </div>
+    <div class="sidebar__stat">
+      <p>Views on post</p>
+      <p class="sidebar__statNumber">2,650</p>
+    </div>
+  </div>
+
+  <div class="sidebar__bottom">
+    <p>Recent</p>
+    <div class="sidebar__recentItem" *ngFor="let topic of recentTopics">
+      <span class="sidebar__hash">#</span>
+      <p>{{ topic }}</p>
+    </div>
+  </div>
+</div>
+

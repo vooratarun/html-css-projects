@@ -1,0 +1,7 @@
+<app-navbar></app-navbar>
+<app-banner></app-banner>
+
+<ng-container *ngFor="let row of movieRows">
+  <app-movie-row [title]="row.title" [posters]="row.posters" [isLarge]="row.isLarge"></app-movie-row>
+</ng-container>
+

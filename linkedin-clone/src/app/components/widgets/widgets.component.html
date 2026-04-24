@@ -1,0 +1,16 @@
+<div class="widgets">
+  <div class="widgets__header">
+    <h2>LinkedIn Clone</h2>
+    <i class="material-icons"> info </i>
+  </div>
+  <div class="widgets__article" *ngFor="let article of articles; trackBy: trackByArticleId">
+    <div class="widgets__articleLeft">
+      <i class="material-icons"> fiber_manual_record </i>
+    </div>
+    <div class="widgets__articleRight">
+      <h4>{{ article.title }}</h4>
+      <p>{{ article.description }}</p>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,13 @@
+<div class="row">
+  <h2>{{ title }}</h2>
+  <div class="row__posters">
+    <img
+      *ngFor="let poster of posters"
+      [src]="poster"
+      alt="{{ title }} poster"
+      class="row__poster"
+      [ngClass]="{ 'row__posterLarge': isLarge }"
+    />
+  </div>
+</div>
+
