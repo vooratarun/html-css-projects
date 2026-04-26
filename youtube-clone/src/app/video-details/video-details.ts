@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { ApiVideo, VideoCard } from '../video.model';
+import {VideosService} from '../videos.service';
 
 type VideoByIdApiResponse = ApiVideo | { data?: ApiVideo | null; video?: ApiVideo | null };
 
@@ -21,6 +22,8 @@ export class VideoDetailsComponent implements OnInit {
   protected video: VideoCard | null = null;
   protected isLoading = true;
   protected errorMessage = '';
+
+  private readonly  videoService = inject(VideosService);
 
   constructor() {}
 

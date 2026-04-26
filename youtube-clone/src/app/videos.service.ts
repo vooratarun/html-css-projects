@@ -1,6 +1,6 @@
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Injectable, inject, WritableSignal, signal, computed} from '@angular/core';
-import { Observable } from 'rxjs';
+import {map, Observable } from 'rxjs';
 import {ApiVideo, VideoCard, VideoUploadPayload, VideoCardAdd} from './video.model';
 import {State} from './state.model';
 
@@ -36,11 +36,11 @@ export class VideosService {
   private currentQuery = '';
   private isSearchMode = false;
 
-  // getVideos(): Observable<VideoCard[]> {
-  //   return this.http.get<VideosApiResponse>(this.videosApiUrl).pipe(
-  //     map((response) => this.normalizeVideos(response))
-  //   );
-  // }
+  getVideos(): Observable<VideoCard[]> {
+    return this.http.get<VideosApiResponse>(this.videosApiUrl).pipe(
+      map((response) => this.normalizeVideos(response))
+    );
+  }
 
   private add$: WritableSignal<State<VideoCardAdd, HttpErrorResponse>> =
     signal(State.Builder<VideoCardAdd, HttpErrorResponse>().forInit().build());
