@@ -92,6 +92,10 @@ export class VideosService {
       });
   }
 
+  recordWatchHistory(userId: number, videoId: number): Observable<void> {
+    return this.http.post<void>(`http://localhost:3000/users/${userId}/watch-history/${videoId}`, {});
+  }
+
   getVideoLikeStatus(userId: number, videoId: number): Observable<boolean> {
     return this.http.get<LikedVideoStatusApiResponse>(`http://localhost:3000/users/${userId}/liked-videos/${videoId}`).pipe(
       map((response) => this.resolveLikedStatus(response)),
@@ -282,6 +286,7 @@ export class VideosService {
     return apiVideos.map((video, index) => ({
       id: video.id ?? index + 1,
       thumbnailUrl: video.thumbnailUrl ?? video.thumbnail ?? '',
+      videoSourceUrl: video.videoSourceUrl ?? video.videoUrl ?? video.videoSrc ?? video.src ?? video.url ?? video.videoPath ?? video.mediaUrl ?? undefined,
       authorImageUrl: video.authorImageUrl ?? video.authorImage ?? '/profile.png',
       title: video.title ?? 'Untitled video',
       channelName: video.channelName ?? video.channel ?? 'Unknown channel',
@@ -302,6 +307,7 @@ export class VideosService {
     return {
       id: rawVideo.id ?? fallbackId,
       thumbnailUrl: rawVideo.thumbnailUrl ?? rawVideo.thumbnail ?? '',
+      videoSourceUrl: rawVideo.videoSourceUrl ?? rawVideo.videoUrl ?? rawVideo.videoSrc ?? rawVideo.src ?? rawVideo.url ?? rawVideo.videoPath ?? rawVideo.mediaUrl ?? undefined,
       authorImageUrl: rawVideo.authorImageUrl ?? rawVideo.authorImage ?? '/profile.png',
       title: rawVideo.title ?? 'Untitled video',
       channelName: rawVideo.channelName ?? rawVideo.channel ?? 'Unknown channel',

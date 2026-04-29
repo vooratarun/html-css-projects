@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, inject } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,27 +29,27 @@ export class HomePageComponent implements OnInit {
   private readonly videosService = inject(VideosService);
   private readonly categoryService = inject(CategoryService);
 
-  protected isSidebarVisible = false;
-  protected searchQuery = '';
-  protected isLoadingVideos = true;
-  protected videosError = '';
-  protected isUploadingVideo = false;
-  protected isDeletingVideo = false;
-  protected isLoadingMore = false;
-  protected uploadVideoError = '';
-  protected uploadVideoSuccess = '';
-  protected videoFormResetKey = 0;
-  protected isEditMode = false;
-  protected selectedVideoForEdit: VideoCard | null = null;
-  protected likedVideoIds = new Set<number>();
-  protected likeError = '';
-  protected categories: CategoryOption[] = [];
-  protected selectedCategoryId: number | null = null;
-  protected isLoadingCategories = true;
-  protected isCreateCategoryDialogOpen = false;
-  protected newCategoryName = '';
-  protected createCategoryError = '';
-  protected isCreatingCategory = false;
+  protected readonly isSidebarVisible = signal(false);
+  protected readonly searchQuery = signal('');
+  protected readonly isLoadingVideos = signal(true);
+  protected readonly videosError = signal('');
+  protected readonly isUploadingVideo = signal(false);
+  protected readonly isDeletingVideo = signal(false);
+  protected readonly isLoadingMore = signal(false);
+  protected readonly uploadVideoError = signal('');
+  protected readonly uploadVideoSuccess = signal('');
+  protected readonly videoFormResetKey = signal(0);
+  protected readonly isEditMode = signal(false);
+  protected readonly selectedVideoForEdit = signal<VideoCard | null>(null);
+  protected readonly likedVideoIds = signal(new Set<number>());
+  protected readonly likeError = signal('');
+  protected readonly categories = signal<CategoryOption[]>([]);
+  protected readonly selectedCategoryId = signal<number | null>(null);
+  protected readonly isLoadingCategories = signal(true);
+  protected readonly isCreateCategoryDialogOpen = signal(false);
+  protected readonly newCategoryName = signal('');
+  protected readonly createCategoryError = signal('');
+  protected readonly isCreatingCategory = signal(false);
   protected readonly primarySidebarCategories: SidebarCategory[] = [
     { id: 1, icon: 'home', label: 'Home' },
     { id: 2, icon: 'local_fire_department', label: 'Trending' },
@@ -57,12 +57,33 @@ export class HomePageComponent implements OnInit {
   ];
   protected readonly librarySidebarCategories: SidebarCategory[] = [
     { id: 1, icon: 'library_add_check', label: 'Library' },
-    { id: 2, icon: 'history', label: 'History' },
+    { id: 2, icon: 'history', label: 'History', route: '/watch-history' },
     { id: 3, icon: 'play_arrow', label: 'Your Videos' },
     { id: 4, icon: 'watch_later', label: 'Watch Later' },
-    { id: 5, icon: 'thumb_up', label: 'Liked Videos', route: '/liked-videos' }
+    { id: 5, icon: 'thumb_up', label: 'Liked Videos', route: '/liked-videos' },
+    { id: 6, icon: 'playlist_play', label: 'Playlists', route: '/playlists' },
+    { id: 7, icon: 'settings', label: 'Settings', route: '/settings' }
   ];
-  protected videos: VideoCard[] = [];
+  protected readonly videos = signal<VideoCard[]>([]);
+  protected readonly filteredVideos = computed(() => this.videos());
+  protected readonly showNoVideosMessage = computed(
+    () => !this.isLoadingVideos() && !this.videosError() && !this.filteredVideos().length
+  );
+  protected readonly emptyVideosMessage = computed(() =>
+    this.searchQuery().trim()
+      ? `No videos found for "${this.searchQuery()}".`
+      : 'No videos available.'
+  );
+  protected readonly authRoute = computed(() =>
+    this.authService.isLoggedIn() ? '/logout' : '/login'
+  );
+  protected readonly authLabel = computed(() =>
+    this.authService.isLoggedIn() ? 'Logout' : 'Login'
+  );
+  protected readonly authUsername = computed(() =>
+    this.authService.currentUser()?.username ?? 'Guest'
+  );
+  protected readonly canDeleteVideos = computed(() => this.authService.isAdmin());
 
   ngOnInit(): void {
     this.videosService.getAllAPI();
@@ -74,112 +95,112 @@ export class HomePageComponent implements OnInit {
       const response = this.videosService.getAllVideos();
 
       if (response.status === 'OK') {
-        this.isLoadingVideos = false;
-        this.isLoadingMore = false;
-        this.videosError = '';
-        this.videos = response.value ?? [];
-        this.syncLikedStatuses(this.videos);
+        this.isLoadingVideos.set(false);
+        this.isLoadingMore.set(false);
+        this.videosError.set('');
+        this.videos.set(response.value ?? []);
+        this.syncLikedStatuses(this.videos());
       } else if (response.status === 'ERROR') {
-        this.isLoadingVideos = false;
-        this.isLoadingMore = false;
-        this.videos = [];
-        this.videosError = 'Unable to load videos right now.';
+        this.isLoadingVideos.set(false);
+        this.isLoadingMore.set(false);
+        this.videos.set([]);
+        this.videosError.set('Unable to load videos right now.');
       }
     });
 
     effect(() => {
       const response = this.videosService.addVid();
       if (response.status === 'OK') {
-        this.isUploadingVideo = false;
-        this.uploadVideoSuccess = 'Video uploaded successfully.';
-        this.videoFormResetKey += 1;
-        this.isLoadingVideos = true;
+        this.isUploadingVideo.set(false);
+        this.uploadVideoSuccess.set('Video uploaded successfully.');
+        this.videoFormResetKey.update((value) => value + 1);
+        this.isLoadingVideos.set(true);
         this.videosService.getAllAPI();
       } else if (response.status === 'ERROR') {
-        this.isUploadingVideo = false;
-        this.uploadVideoError = 'Failed to upload video. Please try again.';
+        this.isUploadingVideo.set(false);
+        this.uploadVideoError.set('Failed to upload video. Please try again.');
       }
     });
 
     effect(() => {
       const response = this.videosService.editVid();
       if (response.status === 'OK') {
-        this.isUploadingVideo = false;
-        this.uploadVideoSuccess = 'Video updated successfully.';
-        this.videoFormResetKey += 1;
-        this.selectedVideoForEdit = null;
-        this.isEditMode = false;
-        this.isLoadingVideos = true;
+        this.isUploadingVideo.set(false);
+        this.uploadVideoSuccess.set('Video updated successfully.');
+        this.videoFormResetKey.update((value) => value + 1);
+        this.selectedVideoForEdit.set(null);
+        this.isEditMode.set(false);
+        this.isLoadingVideos.set(true);
         this.videosService.getAllAPI();
       } else if (response.status === 'ERROR') {
-        this.isUploadingVideo = false;
-        this.uploadVideoError = 'Failed to update video. Please try again.';
+        this.isUploadingVideo.set(false);
+        this.uploadVideoError.set('Failed to update video. Please try again.');
       }
     });
 
     effect(() => {
       const response = this.videosService.deleteVid();
       if (response.status === 'OK') {
-        this.isDeletingVideo = false;
-        this.uploadVideoSuccess = 'Video deleted successfully.';
-        this.uploadVideoError = '';
-        this.isLoadingVideos = true;
+        this.isDeletingVideo.set(false);
+        this.uploadVideoSuccess.set('Video deleted successfully.');
+        this.uploadVideoError.set('');
+        this.isLoadingVideos.set(true);
         this.videosService.getAllAPI();
       } else if (response.status === 'ERROR') {
-        this.isDeletingVideo = false;
-        this.uploadVideoError = 'Failed to delete video. Please try again.';
+        this.isDeletingVideo.set(false);
+        this.uploadVideoError.set('Failed to delete video. Please try again.');
       }
     });
 
     effect(() => {
       const response = this.videosService.likeVid();
       if (response.status === 'OK') {
-        this.likeError = '';
-        this.syncLikedStatuses(this.videos);
+        this.likeError.set('');
+        this.syncLikedStatuses(this.videos());
       }
 
       if (response.status === 'ERROR') {
-        this.likeError = 'Failed to like video. Please try again.';
-        this.syncLikedStatuses(this.videos);
+        this.likeError.set('Failed to like video. Please try again.');
+        this.syncLikedStatuses(this.videos());
       }
     });
 
     effect(() => {
       const response = this.videosService.unlikeVid();
       if (response.status === 'OK') {
-        this.likeError = '';
-        this.syncLikedStatuses(this.videos);
+        this.likeError.set('');
+        this.syncLikedStatuses(this.videos());
       }
 
       if (response.status === 'ERROR') {
-        this.likeError = 'Failed to remove liked video. Please try again.';
-        this.syncLikedStatuses(this.videos);
+        this.likeError.set('Failed to remove liked video. Please try again.');
+        this.syncLikedStatuses(this.videos());
       }
     });
   }
 
   protected onEditVideo(video: VideoCard): void {
-    this.selectedVideoForEdit = video;
-    this.isEditMode = true;
-    this.uploadVideoError = '';
-    this.uploadVideoSuccess = '';
+    this.selectedVideoForEdit.set(video);
+    this.isEditMode.set(true);
+    this.uploadVideoError.set('');
+    this.uploadVideoSuccess.set('');
   }
 
   protected onCancelEdit(): void {
-    this.selectedVideoForEdit = null;
-    this.isEditMode = false;
-    this.videoFormResetKey += 1;
-    this.uploadVideoError = '';
-    this.uploadVideoSuccess = '';
+    this.selectedVideoForEdit.set(null);
+    this.isEditMode.set(false);
+    this.videoFormResetKey.update((value) => value + 1);
+    this.uploadVideoError.set('');
+    this.uploadVideoSuccess.set('');
   }
 
   protected onVideoSubmit(payload: VideoUploadPayload): void {
-    this.isUploadingVideo = true;
-    this.uploadVideoError = '';
-    this.uploadVideoSuccess = '';
+    this.isUploadingVideo.set(true);
+    this.uploadVideoError.set('');
+    this.uploadVideoSuccess.set('');
 
-    if (this.isEditMode && this.selectedVideoForEdit) {
-      this.videosService.updateVideo(this.selectedVideoForEdit.id, payload);
+    if (this.isEditMode() && this.selectedVideoForEdit()) {
+      this.videosService.updateVideo(this.selectedVideoForEdit()!.id, payload);
     } else {
       this.videosService.addVideo(payload);
     }
@@ -188,28 +209,36 @@ export class HomePageComponent implements OnInit {
   protected onLikeVideo(video: VideoCard): void {
     const userId = this.authService.currentUser()?.id;
     if (!userId) {
-      this.likeError = 'You must be logged in to like a video.';
+      this.likeError.set('You must be logged in to like a video.');
       return;
     }
 
-    this.likeError = '';
-    if (this.likedVideoIds.has(video.id)) {
-      this.likedVideoIds.delete(video.id);
+    this.likeError.set('');
+    if (this.likedVideoIds().has(video.id)) {
+      this.likedVideoIds.update((likedIds) => {
+        const next = new Set(likedIds);
+        next.delete(video.id);
+        return next;
+      });
       this.videosService.unlikeVideo(userId, video.id);
       return;
     }
 
-    this.likedVideoIds.add(video.id);
+    this.likedVideoIds.update((likedIds) => {
+      const next = new Set(likedIds);
+      next.add(video.id);
+      return next;
+    });
     this.videosService.likeVideo(userId, video.id);
   }
 
   protected isVideoLiked(videoId: number): boolean {
-    return this.likedVideoIds.has(videoId);
+    return this.likedVideoIds().has(videoId);
   }
 
   protected onDeleteVideo(video: VideoCard): void {
-    if (!this.canDeleteVideos) {
-      this.uploadVideoError = 'Only admin users can delete videos.';
+    if (!this.canDeleteVideos()) {
+      this.uploadVideoError.set('Only admin users can delete videos.');
       return;
     }
 
@@ -218,62 +247,45 @@ export class HomePageComponent implements OnInit {
       return;
     }
 
-    this.isDeletingVideo = true;
-    this.uploadVideoError = '';
-    this.uploadVideoSuccess = '';
+    this.isDeletingVideo.set(true);
+    this.uploadVideoError.set('');
+    this.uploadVideoSuccess.set('');
 
-    if (this.selectedVideoForEdit?.id === video.id) {
+    if (this.selectedVideoForEdit()?.id === video.id) {
       this.onCancelEdit();
     }
 
     this.videosService.deleteVideo(video.id);
   }
 
-  protected get filteredVideos(): VideoCard[] {
-    // Videos are already filtered by the API call, so return all
-    return this.videos;
-  }
-
-  protected get showNoVideosMessage(): boolean {
-    return !this.isLoadingVideos && !this.videosError && !this.filteredVideos.length;
-  }
-
-  protected get emptyVideosMessage(): string {
-    return this.searchQuery.trim()
-      ? `No videos found for "${this.searchQuery}".`
-      : 'No videos available.';
-  }
-
   protected onSearchInput(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.searchQuery = target.value;
-    this.isLoadingVideos = true;
-    this.isLoadingMore = false;
-    this.videosError = '';
-    this.videosService.searchVideosAPI(this.searchQuery);
+    this.searchQuery.set(target.value);
+    this.isLoadingVideos.set(true);
+    this.isLoadingMore.set(false);
+    this.videosError.set('');
+    this.videosService.searchVideosAPI(this.searchQuery());
   }
 
   protected onCategorySelect(categoryId: number | null): void {
-    this.selectedCategoryId = categoryId;
-    this.isLoadingVideos = true;
-    this.videosError = '';
+    this.selectedCategoryId.set(categoryId);
+    this.isLoadingVideos.set(true);
+    this.videosError.set('');
 
     if (categoryId === null) {
-      // Load all videos
       this.videosService.getAllAPI();
     } else {
-      // Load videos for specific category
       this.categoryService.getVideosByCategory(categoryId).subscribe({
         next: (response) => {
-          this.videos = response.videos || [];
-          this.isLoadingVideos = false;
-          this.videosError = '';
-          this.syncLikedStatuses(this.videos);
+          this.videos.set(response.videos || []);
+          this.isLoadingVideos.set(false);
+          this.videosError.set('');
+          this.syncLikedStatuses(this.videos());
         },
         error: () => {
-          this.isLoadingVideos = false;
-          this.videos = [];
-          this.videosError = 'Failed to load videos for this category.';
+          this.isLoadingVideos.set(false);
+          this.videos.set([]);
+          this.videosError.set('Failed to load videos for this category.');
         }
       });
     }
@@ -282,22 +294,22 @@ export class HomePageComponent implements OnInit {
   private loadCategories(): void {
     this.categoryService.getCategories().subscribe({
       next: (categories) => {
-        this.categories = categories;
-        this.isLoadingCategories = false;
+        this.categories.set(categories);
+        this.isLoadingCategories.set(false);
       },
       error: () => {
-        this.categories = [];
-        this.isLoadingCategories = false;
+        this.categories.set([]);
+        this.isLoadingCategories.set(false);
       }
     });
   }
 
   protected onLoadMoreVideos(): void {
-    if (!this.canLoadMoreVideos || this.isLoadingMore) {
+    if (!this.canLoadMoreVideos || this.isLoadingMore()) {
       return;
     }
 
-    this.isLoadingMore = true;
+    this.isLoadingMore.set(true);
     this.videosService.loadMoreVideosAPI();
   }
 
@@ -305,38 +317,22 @@ export class HomePageComponent implements OnInit {
     return this.videosService.getCanLoadMoreVideos();
   }
 
-  protected get authRoute(): string {
-    return this.authService.isLoggedIn() ? '/logout' : '/login';
-  }
-
-  protected get authLabel(): string {
-    return this.authService.isLoggedIn() ? 'Logout' : 'Login';
-  }
-
-  protected get authUsername(): string {
-    return this.authService.currentUser()?.username ?? 'Guest';
-  }
-
-  protected get canDeleteVideos(): boolean {
-    return this.authService.isAdmin();
-  }
-
   protected toggleSidebar(): void {
-    this.isSidebarVisible = !this.isSidebarVisible;
+    this.isSidebarVisible.update((value) => !value);
   }
 
   protected collapseSidebar(): void {
-    if (!this.isSidebarVisible) {
+    if (!this.isSidebarVisible()) {
       return;
     }
 
-    this.isSidebarVisible = false;
+    this.isSidebarVisible.set(false);
   }
 
   private syncLikedStatuses(videos: VideoCard[]): void {
     const userId = this.authService.currentUser()?.id;
     if (!userId || !videos.length) {
-      this.likedVideoIds = new Set<number>();
+      this.likedVideoIds.set(new Set<number>());
       return;
     }
 
@@ -348,50 +344,52 @@ export class HomePageComponent implements OnInit {
           likedIds.add(video.id);
         }
       });
-      this.likedVideoIds = likedIds;
+      this.likedVideoIds.set(likedIds);
     });
   }
 
   protected openCreateCategoryDialog(): void {
-    this.isCreateCategoryDialogOpen = true;
-    this.newCategoryName = '';
-    this.createCategoryError = '';
+    this.isCreateCategoryDialogOpen.set(true);
+    this.newCategoryName.set('');
+    this.createCategoryError.set('');
   }
 
   protected closeCreateCategoryDialog(): void {
-    this.isCreateCategoryDialogOpen = false;
-    this.newCategoryName = '';
-    this.createCategoryError = '';
+    this.isCreateCategoryDialogOpen.set(false);
+    this.newCategoryName.set('');
+    this.createCategoryError.set('');
   }
 
   protected submitCreateCategory(): void {
-    const trimmedName = this.newCategoryName.trim();
+    const trimmedName = this.newCategoryName().trim();
 
     if (!trimmedName) {
-      this.createCategoryError = 'Please enter a category name';
+      this.createCategoryError.set('Please enter a category name');
       return;
     }
 
-    if (this.categories.some(cat => cat.name.toLowerCase() === trimmedName.toLowerCase())) {
-      this.createCategoryError = 'This category already exists';
+    if (this.categories().some((cat) => cat.name.toLowerCase() === trimmedName.toLowerCase())) {
+      this.createCategoryError.set('This category already exists');
       return;
     }
 
-    this.isCreatingCategory = true;
-    this.createCategoryError = '';
+    this.isCreatingCategory.set(true);
+    this.createCategoryError.set('');
 
     this.categoryService.createCategory({
       name: trimmedName,
       description: `${trimmedName} category`
     }).subscribe({
       next: (newCategory) => {
-        this.categories = [...this.categories, newCategory];
-        this.isCreatingCategory = false;
+        this.categories.update((categories) => [...categories, newCategory]);
+        this.isCreatingCategory.set(false);
         this.closeCreateCategoryDialog();
       },
       error: (err) => {
-        this.isCreatingCategory = false;
-        this.createCategoryError = err?.error?.message || 'Failed to create category. Please try again.';
+        this.isCreatingCategory.set(false);
+        this.createCategoryError.set(
+          err?.error?.message || 'Failed to create category. Please try again.'
+        );
       }
     });
   }

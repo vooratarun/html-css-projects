@@ -24,6 +24,7 @@ export class VideoFormComponent implements OnChanges, OnInit {
 
   protected readonly videoForm = this.formBuilder.nonNullable.group({
     thumbnailUrl: ['', Validators.required],
+    videoSourceUrl: ['', Validators.required],
     authorImageUrl: ['', Validators.required],
     title: ['', Validators.required],
     channelName: ['', Validators.required],
@@ -39,6 +40,7 @@ export class VideoFormComponent implements OnChanges, OnInit {
     if (changes['resetKey'] && !changes['resetKey'].firstChange) {
       this.videoForm.reset({
         thumbnailUrl: '',
+        videoSourceUrl: '',
         authorImageUrl: '',
         title: '',
         channelName: '',
@@ -50,6 +52,7 @@ export class VideoFormComponent implements OnChanges, OnInit {
     if (changes['initialData'] && this.initialData) {
       this.videoForm.reset({
         thumbnailUrl: this.initialData.thumbnailUrl ?? '',
+        videoSourceUrl: this.initialData.videoSourceUrl ?? '',
         authorImageUrl: this.initialData.authorImageUrl ?? '',
         title: this.initialData.title ?? '',
         channelName: this.initialData.channelName ?? '',
@@ -70,6 +73,7 @@ export class VideoFormComponent implements OnChanges, OnInit {
 
     this.submitVideo.emit({
       thumbnailUrl: formValue.thumbnailUrl,
+      videoSourceUrl: formValue.videoSourceUrl,
       authorImageUrl: formValue.authorImageUrl,
       title: formValue.title,
       channelName: formValue.channelName,

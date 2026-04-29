@@ -10,7 +10,27 @@
     <p class="details-error">{{ errorMessage }}</p>
   } @else if (video) {
     <div class="details-card">
-      <img class="details-thumbnail" [src]="video.thumbnailUrl" [alt]="video.title" />
+      @if (isVideoPlaying && videoSourceUrl) {
+        <video
+          class="details-video-player"
+          [src]="videoSourceUrl"
+          [poster]="video.thumbnailUrl"
+          controls
+          autoplay
+        ></video>
+      } @else {
+        <button
+          class="details-video-preview"
+          [disabled]="!videoSourceUrl"
+          (click)="onStartVideo()"
+          type="button"
+        >
+          <img class="details-thumbnail" [src]="video.thumbnailUrl" [alt]="video.title" />
+          <span class="details-video-overlay">
+            <i class="material-icons">play_circle_filled</i>
+          </span>
+        </button>
+      }
       <div class="details-meta">
         <h1>{{ video.title }}</h1>
         <div class="channel-row">
@@ -29,6 +49,45 @@
         }
         @if (likeError) {
           <p class="details-error">{{ likeError }}</p>
+        }
+        <div class="details-playlist-section">
+          <h2 class="details-playlist-title">Save to playlist</h2>
+          @if (!isLoggedIn) {
+            <p class="details-playlist-status">
+              <a [routerLink]="authRoute">Log in</a> to add this video to a playlist.
+            </p>
+          } @else if (isLoadingPlaylists) {
+            <p class="details-playlist-status">Loading playlists...</p>
+          } @else if (playlistsError) {
+            <p class="details-error">{{ playlistsError }}</p>
+          } @else if (!playlists.length) {
+            <p class="details-playlist-status">
+              No playlists found. Create one in <a routerLink="/playlists">Playlists</a>.
+            </p>
+          } @else {
+            <div class="details-playlist-controls">
+              <select class="details-playlist-select" [(ngModel)]="selectedPlaylistId">
+                @for (playlist of playlists; track playlist.id) {
+                  <option [ngValue]="playlist.id">{{ playlist.name }}</option>
+                }
+              </select>
+              <button
+                class="details-playlist-btn"
+                [disabled]="isAddingToPlaylist"
+                (click)="onAddToPlaylist()">
+                {{ isAddingToPlaylist ? 'Adding...' : 'Add to Playlist' }}
+              </button>
+            </div>
+            @if (addToPlaylistSuccess) {
+              <p class="details-success">{{ addToPlaylistSuccess }}</p>
+            }
+            @if (addToPlaylistError) {
+              <p class="details-error">{{ addToPlaylistError }}</p>
+            }
+          }
+        </div>
+        @if (!videoSourceUrl) {
+          <p class="details-video-unavailable">Video source is unavailable for playback.</p>
         }
         <p>{{ video.meta }}</p>
 

@@ -1,6 +1,7 @@
 export type VideoCard = {
   id: number;
   thumbnailUrl: string;
+  videoSourceUrl?: string;
   authorImageUrl: string;
   title: string;
   channelName: string;
@@ -13,6 +14,12 @@ export type VideoCard = {
 export type ApiVideo = Partial<VideoCard> & {
   id: number;
   thumbnail?: string;
+  videoUrl?: string;
+  videoSrc?: string;
+  src?: string;
+  url?: string;
+  videoPath?: string;
+  mediaUrl?: string;
   authorImage?: string;
   channel?: string;
   views?: string;
@@ -35,6 +42,7 @@ export type ApiVideoComment = Partial<VideoComment> & {
 
 export interface VideoCardAdd {
   thumbnailUrl: string;
+  videoSourceUrl: string;
   authorImageUrl: string;
   title: string;
   channelName: string;
@@ -44,4 +52,30 @@ export interface VideoCardAdd {
 }
 
 export type VideoUploadPayload = VideoCardAdd;
+
+export type Playlist = {
+  id: number;
+  userId: number;
+  name: string;
+  description: string;
+  videoIds: number[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WatchHistoryItem = {
+  id: number;
+  userId: number;
+  videoId: number;
+  watchedAt: string;
+  video: VideoCard;
+};
+
+export type ApiWatchHistoryItem = {
+  id: number;
+  userId?: number;
+  videoId?: number;
+  watchedAt?: string;
+  video?: ApiVideo | null;
+};
 

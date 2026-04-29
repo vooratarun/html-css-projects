@@ -1,9 +1,9 @@
 <!-- Header Starts -->
 <app-header
-  [searchQuery]="searchQuery"
-  [authRoute]="authRoute"
-  [authLabel]="authLabel"
-  [authUsername]="authUsername"
+  [searchQuery]="searchQuery()"
+  [authRoute]="authRoute()"
+  [authLabel]="authLabel()"
+  [authUsername]="authUsername()"
   (menuToggle)="toggleSidebar()"
   (searchInput)="onSearchInput($event)"
 ></app-header>
@@ -12,7 +12,7 @@
 <!-- Main Body Starts -->
 <div class="mainBody">
   <!-- Sidebar Starts -->
-  <div class="sidebar" [class.show-sidebar]="isSidebarVisible">
+  <div class="sidebar" [class.show-sidebar]="isSidebarVisible()">
     <div class="sidebar__categories">
       @for (category of primarySidebarCategories; track category.id) {
         <app-sidebar-category (click)="collapseSidebar()" [icon]="category.icon" [label]="category.label"></app-sidebar-category>
@@ -33,27 +33,27 @@
   <!-- Videos Section -->
   <div class="videos">
     <app-video-form
-      [isSubmitting]="isUploadingVideo"
-      [resetKey]="videoFormResetKey"
-      [isEditMode]="isEditMode"
-      [initialData]="selectedVideoForEdit"
+      [isSubmitting]="isUploadingVideo()"
+      [resetKey]="videoFormResetKey()"
+      [isEditMode]="isEditMode()"
+      [initialData]="selectedVideoForEdit()"
       (submitVideo)="onVideoSubmit($event)"
     ></app-video-form>
 
-    @if (isEditMode) {
+    @if (isEditMode()) {
       <button class="cancel-edit-btn" (click)="onCancelEdit()">Cancel Edit</button>
     }
 
-    @if (uploadVideoSuccess) {
-      <p class="upload-message success">{{ uploadVideoSuccess }}</p>
+    @if (uploadVideoSuccess()) {
+      <p class="upload-message success">{{ uploadVideoSuccess() }}</p>
     }
 
-    @if (uploadVideoError) {
-      <p class="upload-message error">{{ uploadVideoError }}</p>
+    @if (uploadVideoError()) {
+      <p class="upload-message error">{{ uploadVideoError() }}</p>
     }
 
-    @if (likeError) {
-      <p class="upload-message error">{{ likeError }}</p>
+    @if (likeError()) {
+      <p class="upload-message error">{{ likeError() }}</p>
     }
 
     <!-- Category Filter Section -->
@@ -65,20 +65,20 @@
           Create
         </button>
       </div>
-      @if (isLoadingCategories) {
+      @if (isLoadingCategories()) {
         <p>Loading categories...</p>
       } @else {
         <div class="category-buttons">
           <button
             class="category-btn"
-            [class.active]="selectedCategoryId === null"
+            [class.active]="selectedCategoryId() === null"
             (click)="onCategorySelect(null)">
             All
           </button>
-          @for (category of categories; track category.id) {
+          @for (category of categories(); track category.id) {
             <button
               class="category-btn"
-              [class.active]="selectedCategoryId === category.id"
+              [class.active]="selectedCategoryId() === category.id"
               (click)="onCategorySelect(category.id)">
               {{ category.name }}
             </button>
@@ -90,20 +90,20 @@
     <h1>Recommended</h1>
 
     <div class="videos__container">
-      @if (isLoadingVideos) {
+      @if (isLoadingVideos()) {
         <p>Loading videos...</p>
-      } @else if (videosError) {
-        <p>{{ videosError }}</p>
+      } @else if (videosError()) {
+        <p>{{ videosError() }}</p>
       } @else {
-        @for (video of filteredVideos; track video.id) {
+        @for (video of filteredVideos(); track video.id) {
           <div class="video">
             <div class="video__thumbnail">
               <img [src]="video.thumbnailUrl" [alt]="video.title" />
-              <button class="edit-btn" (click)="onEditVideo(video)" [disabled]="isDeletingVideo" title="Edit">
+              <button class="edit-btn" (click)="onEditVideo(video)" [disabled]="isDeletingVideo()" title="Edit">
                 <i class="material-icons">edit</i>
               </button>
-              @if (canDeleteVideos) {
-                <button class="delete-btn" (click)="onDeleteVideo(video)" [disabled]="isDeletingVideo" title="Delete">
+              @if (canDeleteVideos()) {
+                <button class="delete-btn" (click)="onDeleteVideo(video)" [disabled]="isDeletingVideo()" title="Delete">
                   <i class="material-icons">delete</i>
                 </button>
               }
@@ -129,15 +129,15 @@
           </div>
         }
 
-        @if (showNoVideosMessage) {
-          <p>{{ emptyVideosMessage }}</p>
+        @if (showNoVideosMessage()) {
+          <p>{{ emptyVideosMessage() }}</p>
         }
       }
     </div>
 
-    @if (!isLoadingVideos && !videosError && canLoadMoreVideos && filteredVideos.length) {
-      <button class="load-more-btn" [disabled]="isLoadingMore" (click)="onLoadMoreVideos()">
-        {{ isLoadingMore ? 'Loading...' : 'Load More' }}
+    @if (!isLoadingVideos() && !videosError() && canLoadMoreVideos && filteredVideos().length) {
+      <button class="load-more-btn" [disabled]="isLoadingMore()" (click)="onLoadMoreVideos()">
+        {{ isLoadingMore() ? 'Loading...' : 'Load More' }}
       </button>
     }
   </div>
@@ -145,7 +145,7 @@
 <!-- Main Body Ends -->
 
 <!-- Create Category Dialog Modal -->
-@if (isCreateCategoryDialogOpen) {
+@if (isCreateCategoryDialogOpen()) {
   <div class="create-category-overlay" (click)="closeCreateCategoryDialog()">
     <div class="create-category-dialog" (click)="$event.stopPropagation()">
       <div class="create-category-header">
@@ -156,8 +156,8 @@
       </div>
 
       <div class="create-category-content">
-        @if (createCategoryError) {
-          <p class="create-category-error">{{ createCategoryError }}</p>
+        @if (createCategoryError()) {
+          <p class="create-category-error">{{ createCategoryError() }}</p>
         }
 
         <div class="create-category-form">
@@ -165,7 +165,8 @@
           <input
             id="categoryNameInput"
             type="text"
-            [(ngModel)]="newCategoryName"
+            [ngModel]="newCategoryName()"
+            (ngModelChange)="newCategoryName.set($event)"
             placeholder="Enter category name"
             (keyup.enter)="submitCreateCategory()"
             class="category-input"
@@ -178,8 +179,8 @@
         <button
           class="category-create-btn"
           (click)="submitCreateCategory()"
-          [disabled]="isCreatingCategory">
-          {{ isCreatingCategory ? 'Creating...' : 'Create Category' }}
+          [disabled]="isCreatingCategory()">
+          {{ isCreatingCategory() ? 'Creating...' : 'Create Category' }}
         </button>
       </div>
     </div>
