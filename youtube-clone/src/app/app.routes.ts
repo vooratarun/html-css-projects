@@ -3,6 +3,7 @@ import { HomePageComponent } from './home-page/home-page';
 import { LoginPageComponent } from './login-page/login-page';
 import { LogoutPageComponent } from './logout-page/logout-page';
 import { VideoDetailsComponent } from './video-details/video-details';
+import { LikedVideosPageComponent } from './liked-videos-page/liked-videos-page';
 
 export const appRoutes: Routes = [
   {
@@ -12,6 +13,10 @@ export const appRoutes: Routes = [
   {
     path: 'video/:id',
     component: VideoDetailsComponent
+  },
+  {
+    path: 'liked-videos',
+    component: LikedVideosPageComponent
   },
   {
     path: 'login',

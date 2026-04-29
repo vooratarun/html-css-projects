@@ -36,13 +36,15 @@
   <div class="sidebar" [class.show-sidebar]="isSidebarVisible">
     <div class="sidebar__categories">
       @for (category of primarySidebarCategories; track category.id) {
-        <app-sidebar-category [icon]="category.icon" [label]="category.label"></app-sidebar-category>
+        <app-sidebar-category (click)="collapseSidebar()" [icon]="category.icon" [label]="category.label"></app-sidebar-category>
       }
     </div>
     <hr />
     <div class="sidebar__categories">
       @for (category of librarySidebarCategories; track category.id) {
-        <app-sidebar-category [icon]="category.icon" [label]="category.label"></app-sidebar-category>
+        <a class="sidebar-link" [routerLink]="category.route ?? null" (click)="collapseSidebar()">
+          <app-sidebar-category [icon]="category.icon" [label]="category.label"></app-sidebar-category>
+        </a>
       }
     </div>
     <hr />
@@ -71,6 +73,10 @@
       <p class="upload-message error">{{ uploadVideoError }}</p>
     }
 
+    @if (likeError) {
+      <p class="upload-message error">{{ likeError }}</p>
+    }
+
     <h1>Recommended</h1>
 
     <div class="videos__container">
@@ -88,6 +94,9 @@
               </button>
               <button class="delete-btn" (click)="onDeleteVideo(video)" [disabled]="isDeletingVideo" title="Delete">
                 <i class="material-icons">delete</i>
+              </button>
+              <button class="like-btn" (click)="onLikeVideo(video)" [class.liked]="isVideoLiked(video.id)" title="Like">
+                <i class="material-icons">{{ isVideoLiked(video.id) ? 'thumb_up' : 'thumb_up_off_alt' }}</i>
               </button>
             </div>
             <div class="video__details">

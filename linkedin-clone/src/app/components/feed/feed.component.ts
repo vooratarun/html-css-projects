@@ -25,6 +25,21 @@ export class FeedComponent {
     { id: 7, author: 'Somanath Goudar', role: 'Job Description', message: 'Message here' }
   ];
 
+  inputOptions = [
+    { icon: 'thumb_up', label: 'Like', color: 'gray' },
+    { icon: 'comment', label: 'Comment', color: 'gray' },
+    { icon: 'share', label: 'Share', color: 'gray' },
+    { icon: 'send', label: 'Send', color: 'gray' }
+  ];
+
+  feedOptions = [
+    { icon: 'insert_photo', label: 'Photo', color: '#70b5f9' },
+    { icon: 'subscriptions', label: 'Video', color: '#e7a33e' },
+    { icon: 'event_note', label: 'Event', color: '#c0cbcd' },
+    { icon: 'calendar_view_day', label: 'Write Article', color: '#7fc15e' }
+  ];
+
+
   trackByPostId(index: number, post: FeedPost): number {
     return post.id;
   }

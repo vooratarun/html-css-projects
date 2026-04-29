@@ -1,6 +1,6 @@
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Injectable, inject, WritableSignal, signal, computed} from '@angular/core';
-import {map, Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import {ApiVideo, VideoCard, VideoUploadPayload, VideoCardAdd} from './video.model';
 import {State} from './state.model';
 
@@ -20,6 +20,9 @@ type VideosPagedApiResponse = {
 
 
 type VideoByIdApiResponse = ApiVideo | { data?: ApiVideo | null; video?: ApiVideo | null };
+type LikedVideoStatusApiResponse =
+  | { liked?: boolean; isLiked?: boolean; status?: 'liked' | 'not-liked' }
+  | { data?: { liked?: boolean; isLiked?: boolean; status?: 'liked' | 'not-liked' } };
 
 @Injectable({
   providedIn: 'root'
@@ -58,6 +61,52 @@ export class VideosService {
     signal(State.Builder<Array<VideoCard>, HttpErrorResponse>().forInit().build());
   getAllVideos = computed(() => this.getAll$());
 
+  private like$: WritableSignal<State<unknown, HttpErrorResponse>> =
+    signal(State.Builder<unknown, HttpErrorResponse>().forInit().build());
+  likeVid = computed(() => this.like$());
+
+  private unlike$: WritableSignal<State<unknown, HttpErrorResponse>> =
+    signal(State.Builder<unknown, HttpErrorResponse>().forInit().build());
+  unlikeVid = computed(() => this.unlike$());
+
+  likeVideo(userId: number, videoId: number): void {
+    this.http.post(`http://localhost:3000/users/${userId}/liked-videos/${videoId}`, {})
+      .subscribe({
+        next: (response) => this.like$.set(State.Builder<unknown, HttpErrorResponse>().forSuccess(response).build()),
+        error: (err) => this.like$.set(State.Builder<unknown, HttpErrorResponse>().forError(err).build())
+      });
+  }
+
+  unlikeVideo(userId: number, videoId: number): void {
+    this.http.delete(`http://localhost:3000/users/${userId}/liked-videos/${videoId}`)
+      .subscribe({
+        next: (response) => this.unlike$.set(State.Builder<unknown, HttpErrorResponse>().forSuccess(response).build()),
+        error: (err) => this.unlike$.set(State.Builder<unknown, HttpErrorResponse>().forError(err).build())
+      });
+  }
+
+  getVideoLikeStatus(userId: number, videoId: number): Observable<boolean> {
+    return this.http.get<LikedVideoStatusApiResponse>(`http://localhost:3000/users/${userId}/liked-videos/${videoId}`).pipe(
+      map((response) => this.resolveLikedStatus(response)),
+      catchError(() => of(false))
+    );
+  }
+
+  private likedVideos$: WritableSignal<State<Array<VideoCard>, HttpErrorResponse>> =
+    signal(State.Builder<Array<VideoCard>, HttpErrorResponse>().forInit().build());
+  getLikedVideosState = computed(() => this.likedVideos$());
+
+  getLikedVideosAPI(userId: number): void {
+    this.likedVideos$.set(State.Builder<Array<VideoCard>, HttpErrorResponse>().forInit().build());
+    this.http.get<VideosApiResponse>(`http://localhost:3000/users/${userId}/liked-videos`)
+      .subscribe({
+        next: (response) => {
+          const videos = this.normalizeVideos(response);
+          this.likedVideos$.set(State.Builder<Array<VideoCard>, HttpErrorResponse>().forSuccess(videos).build());
+        },
+        error: (err) => this.likedVideos$.set(State.Builder<Array<VideoCard>, HttpErrorResponse>().forError(err).build())
+      });
+  }
   private getById$: WritableSignal<State<VideoCard | null, HttpErrorResponse>> =
     signal(State.Builder<VideoCard | null, HttpErrorResponse>().forInit().build());
   getVideoByIdState = computed(() => this.getById$());
@@ -264,6 +313,39 @@ export class VideosService {
 
   private buildMeta(video: ApiVideo): string {
     return [video.views, video.publishedAt].filter(Boolean).join(' • ');
+  }
+
+  private resolveLikedStatus(response: LikedVideoStatusApiResponse): boolean {
+    if (!response || typeof response !== 'object') {
+      return false;
+    }
+
+    if ('liked' in response && typeof response.liked === 'boolean') {
+      return response.liked;
+    }
+
+    if ('isLiked' in response && typeof response.isLiked === 'boolean') {
+      return response.isLiked;
+    }
+
+    if ('status' in response && typeof response.status === 'string') {
+      return response.status === 'liked';
+    }
+
+    const nested = 'data' in response ? response.data : undefined;
+    if (!nested || typeof nested !== 'object') {
+      return false;
+    }
+
+    if (typeof nested.liked === 'boolean') {
+      return nested.liked;
+    }
+
+    if (typeof nested.isLiked === 'boolean') {
+      return nested.isLiked;
+    }
+
+    return nested.status === 'liked';
   }
 }
 

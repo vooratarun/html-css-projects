@@ -67,6 +67,41 @@
   background: rgba(183, 28, 28, 1);
 }
 
+.like-btn {
+  position: absolute;
+  top: 8px;
+  right: 104px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.video__thumbnail:hover .like-btn {
+  opacity: 1;
+}
+
+.like-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.like-btn.liked {
+  background: rgba(21, 101, 192, 0.9);
+  opacity: 1;
+}
+
+.like-btn.liked:hover {
+  background: rgba(21, 101, 192, 1);
+}
+
 .edit-btn:hover {
   background: rgba(0, 0, 0, 0.9);
 }
@@ -122,5 +157,11 @@
 
 .header__auth-link span {
   font-size: 14px;
+}
+
+.sidebar-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 

@@ -1,5 +1,6 @@
 import { Component, OnInit, effect, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../auth.service';
 import { SidebarCategoryComponent } from '../sidebar-category/sidebar-category';
 import { VideoCard, VideoUploadPayload } from '../video.model';
@@ -10,6 +11,7 @@ type SidebarCategory = {
   id: number;
   icon: string;
   label: string;
+  route?: string;
 };
 
 @Component({
@@ -34,6 +36,8 @@ export class HomePageComponent implements OnInit {
   protected videoFormResetKey = 0;
   protected isEditMode = false;
   protected selectedVideoForEdit: VideoCard | null = null;
+  protected likedVideoIds = new Set<number>();
+  protected likeError = '';
   protected readonly primarySidebarCategories: SidebarCategory[] = [
     { id: 1, icon: 'home', label: 'Home' },
     { id: 2, icon: 'local_fire_department', label: 'Trending' },
@@ -44,7 +48,7 @@ export class HomePageComponent implements OnInit {
     { id: 2, icon: 'history', label: 'History' },
     { id: 3, icon: 'play_arrow', label: 'Your Videos' },
     { id: 4, icon: 'watch_later', label: 'Watch Later' },
-    { id: 5, icon: 'thumb_up', label: 'Liked Videos' }
+    { id: 5, icon: 'thumb_up', label: 'Liked Videos', route: '/liked-videos' }
   ];
   protected videos: VideoCard[] = [];
 
@@ -61,6 +65,7 @@ export class HomePageComponent implements OnInit {
         this.isLoadingMore = false;
         this.videosError = '';
         this.videos = response.value ?? [];
+        this.syncLikedStatuses(this.videos);
       } else if (response.status === 'ERROR') {
         this.isLoadingVideos = false;
         this.isLoadingMore = false;
@@ -112,6 +117,32 @@ export class HomePageComponent implements OnInit {
         this.uploadVideoError = 'Failed to delete video. Please try again.';
       }
     });
+
+    effect(() => {
+      const response = this.videosService.likeVid();
+      if (response.status === 'OK') {
+        this.likeError = '';
+        this.syncLikedStatuses(this.videos);
+      }
+
+      if (response.status === 'ERROR') {
+        this.likeError = 'Failed to like video. Please try again.';
+        this.syncLikedStatuses(this.videos);
+      }
+    });
+
+    effect(() => {
+      const response = this.videosService.unlikeVid();
+      if (response.status === 'OK') {
+        this.likeError = '';
+        this.syncLikedStatuses(this.videos);
+      }
+
+      if (response.status === 'ERROR') {
+        this.likeError = 'Failed to remove liked video. Please try again.';
+        this.syncLikedStatuses(this.videos);
+      }
+    });
   }
 
   protected onEditVideo(video: VideoCard): void {
@@ -139,6 +170,28 @@ export class HomePageComponent implements OnInit {
     } else {
       this.videosService.addVideo(payload);
     }
+  }
+
+  protected onLikeVideo(video: VideoCard): void {
+    const userId = this.authService.currentUser()?.id;
+    if (!userId) {
+      this.likeError = 'You must be logged in to like a video.';
+      return;
+    }
+
+    this.likeError = '';
+    if (this.likedVideoIds.has(video.id)) {
+      this.likedVideoIds.delete(video.id);
+      this.videosService.unlikeVideo(userId, video.id);
+      return;
+    }
+
+    this.likedVideoIds.add(video.id);
+    this.videosService.likeVideo(userId, video.id);
+  }
+
+  protected isVideoLiked(videoId: number): boolean {
+    return this.likedVideoIds.has(videoId);
   }
 
   protected onDeleteVideo(video: VideoCard): void {
@@ -208,6 +261,33 @@ export class HomePageComponent implements OnInit {
 
   protected toggleSidebar(): void {
     this.isSidebarVisible = !this.isSidebarVisible;
+  }
+
+  protected collapseSidebar(): void {
+    if (!this.isSidebarVisible) {
+      return;
+    }
+
+    this.isSidebarVisible = false;
+  }
+
+  private syncLikedStatuses(videos: VideoCard[]): void {
+    const userId = this.authService.currentUser()?.id;
+    if (!userId || !videos.length) {
+      this.likedVideoIds = new Set<number>();
+      return;
+    }
+
+    const checks = videos.map((video) => this.videosService.getVideoLikeStatus(userId, video.id));
+    forkJoin(checks).subscribe((statuses) => {
+      const likedIds = new Set<number>();
+      videos.forEach((video, index) => {
+        if (statuses[index]) {
+          likedIds.add(video.id);
+        }
+      });
+      this.likedVideoIds = likedIds;
+    });
   }
 }
 

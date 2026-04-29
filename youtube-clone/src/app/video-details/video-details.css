@@ -56,3 +56,29 @@
   color: #b71c1c;
 }
 
+.details-success {
+  color: #1b5e20;
+}
+
+.details-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  background: #0f0f0f;
+  color: #fff;
+  cursor: pointer;
+}
+
+.details-like-btn.liked {
+  background: #1565c0;
+}
+
+.details-like-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+

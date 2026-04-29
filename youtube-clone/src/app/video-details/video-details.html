@@ -17,6 +17,16 @@
           <img [src]="video.authorImageUrl" [alt]="video.channelName" />
           <strong>{{ video.channelName }}</strong>
         </div>
+        <button class="details-like-btn" [class.liked]="isLiked" [disabled]="isLikeSubmitting" (click)="onToggleLike()">
+          <i class="material-icons">{{ isLiked ? 'thumb_up' : 'thumb_up_off_alt' }}</i>
+          <span>{{ isLiked ? 'Liked' : 'Like' }}</span>
+        </button>
+        @if (likeSuccess) {
+          <p class="details-success">{{ likeSuccess }}</p>
+        }
+        @if (likeError) {
+          <p class="details-error">{{ likeError }}</p>
+        }
         <p>{{ video.meta }}</p>
       </div>
     </div>

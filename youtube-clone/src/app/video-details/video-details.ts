@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, effect, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
@@ -22,10 +22,55 @@ export class VideoDetailsComponent implements OnInit {
   protected video: VideoCard | null = null;
   protected isLoading = true;
   protected errorMessage = '';
+  protected isLiked = false;
+  protected isLikeSubmitting = false;
+  protected likeError = '';
+  protected likeSuccess = '';
 
-  private readonly  videoService = inject(VideosService);
+  private readonly videoService = inject(VideosService);
+  private pendingLikeAction: 'LIKE' | 'UNLIKE' | null = null;
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      const state = this.videoService.likeVid();
+      if (this.pendingLikeAction !== 'LIKE') {
+        return;
+      }
+
+      if (state.status === 'OK') {
+        this.isLikeSubmitting = false;
+        this.pendingLikeAction = null;
+        this.likeError = '';
+        this.likeSuccess = 'Added to liked videos.';
+      } else if (state.status === 'ERROR') {
+        this.isLikeSubmitting = false;
+        this.pendingLikeAction = null;
+        this.isLiked = false;
+        this.likeSuccess = '';
+        this.likeError = 'Failed to like this video. Please try again.';
+      }
+    });
+
+    effect(() => {
+      const state = this.videoService.unlikeVid();
+      if (this.pendingLikeAction !== 'UNLIKE') {
+        return;
+      }
+
+      if (state.status === 'OK') {
+        this.isLikeSubmitting = false;
+        this.pendingLikeAction = null;
+        this.likeError = '';
+        this.likeSuccess = 'Removed from liked videos.';
+      } else if (state.status === 'ERROR') {
+        this.isLikeSubmitting = false;
+        this.pendingLikeAction = null;
+        this.isLiked = true;
+        this.likeSuccess = '';
+        this.likeError = 'Failed to remove like. Please try again.';
+      }
+    });
+  }
 
   protected get authRoute(): string {
     return this.authService.isLoggedIn() ? '/logout' : '/login';
@@ -58,6 +103,11 @@ export class VideoDetailsComponent implements OnInit {
               meta: rawVideo.meta ?? [rawVideo.views, rawVideo.publishedAt].filter(Boolean).join(' • ')
             }
           : null;
+
+        if (this.video) {
+          this.syncLikeStatus(this.video.id);
+        }
+
         this.isLoading = false;
       },
       error: () => {
@@ -66,6 +116,49 @@ export class VideoDetailsComponent implements OnInit {
         this.errorMessage = 'Unable to load video details.';
       }
     });
+  }
+
+  protected onToggleLike(): void {
+    const userId = this.authService.currentUser()?.id;
+    const videoId = this.video?.id;
+
+    if (!userId || !videoId) {
+      this.likeSuccess = '';
+      this.likeError = 'You must be logged in to like this video.';
+      return;
+    }
+
+    if (this.isLikeSubmitting) {
+      return;
+    }
+
+    this.isLikeSubmitting = true;
+    this.likeError = '';
+    this.likeSuccess = '';
+
+    if (this.isLiked) {
+      this.isLiked = false;
+      this.pendingLikeAction = 'UNLIKE';
+      this.videoService.unlikeVideo(userId, videoId);
+      return;
+    }
+
+    this.isLiked = true;
+    this.pendingLikeAction = 'LIKE';
+    this.videoService.likeVideo(userId, videoId);
+  }
+
+  private syncLikeStatus(videoId: number): void {
+    const userId = this.authService.currentUser()?.id;
+    if (!userId) {
+      this.isLiked = false;
+      return;
+    }
+
+    this.videoService.getVideoLikeStatus(userId, videoId)
+      .subscribe((isLiked) => {
+        this.isLiked = isLiked;
+      });
   }
 
   private extractVideo(response: VideoByIdApiResponse): ApiVideo | null {

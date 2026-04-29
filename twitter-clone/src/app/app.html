@@ -1,6 +1,7 @@
 <main class="app-shell">
   <aside class="sidebar" aria-label="Primary">
     <i class="fab fa-twitter" aria-hidden="true"></i>
+
     <div
       *ngFor="let option of sidebarOptions; trackBy: trackByLabel"
       class="sidebarOption"
@@ -9,6 +10,8 @@
       <span class="material-icons">{{ option.icon }}</span>
       <h2>{{ option.label }}</h2>
     </div>
+
+
     <button type="button" class="sidebar__tweet">Tweet</button>
   </aside>
   <section class="feed" aria-label="Timeline">

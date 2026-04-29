@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { map, Observable, tap } from 'rxjs';
 
 type DummyUser = {
+  id?: number;
   username: string;
 };
 
@@ -40,7 +41,8 @@ export class AuthService {
     return this.http.post<LoginApiResponse>(this.loginApiUrl, { username, password }).pipe(
       tap((response) => {
         const resolvedUsername = response.user?.username ?? response.username ?? username;
-        const user = this.toStoredUser(resolvedUsername);
+        const resolvedId = response.user?.id;
+        const user = this.toStoredUser(resolvedUsername, resolvedId);
 
         if (response.token) {
           localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, response.token);
@@ -67,9 +69,9 @@ export class AuthService {
     this.currentUserSignal.set(user);
   }
 
-  private toStoredUser(username: string): DummyUser {
+  private toStoredUser(username: string, id?: number): DummyUser {
     const trimmedUsername = username.trim() || 'Guest User';
-    return { username: trimmedUsername };
+    return { id, username: trimmedUsername };
   }
 
   private readStoredUser(): DummyUser | null {
