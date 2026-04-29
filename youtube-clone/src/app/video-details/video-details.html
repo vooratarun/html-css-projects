@@ -17,6 +17,9 @@
           <img [src]="video.authorImageUrl" [alt]="video.channelName" />
           <strong>{{ video.channelName }}</strong>
         </div>
+        @if (video.categoryName || video.category) {
+          <p class="details-category">Category: {{ video.categoryName ?? video.category }}</p>
+        }
         <button class="details-like-btn" [class.liked]="isLiked" [disabled]="isLikeSubmitting" (click)="onToggleLike()">
           <i class="material-icons">{{ isLiked ? 'thumb_up' : 'thumb_up_off_alt' }}</i>
           <span>{{ isLiked ? 'Liked' : 'Like' }}</span>
@@ -28,6 +31,85 @@
           <p class="details-error">{{ likeError }}</p>
         }
         <p>{{ video.meta }}</p>
+
+        <section class="details-comments">
+          <h2>Comments</h2>
+
+          <!-- Create comment form -->
+          @if (isLoggedIn) {
+            <div class="details-add-comment">
+              <textarea
+                class="details-comment-input"
+                [(ngModel)]="newCommentText"
+                placeholder="Write a comment..."
+                rows="3"
+              ></textarea>
+              @if (postCommentError) {
+                <p class="details-error">{{ postCommentError }}</p>
+              }
+              @if (postCommentSuccess) {
+                <p class="details-success">{{ postCommentSuccess }}</p>
+              }
+              <button
+                class="details-post-comment-btn"
+                [disabled]="isPostingComment"
+                (click)="onPostComment()">
+                {{ isPostingComment ? 'Posting...' : 'Post Comment' }}
+              </button>
+            </div>
+          } @else {
+            <p class="details-comments-status">
+              <a [routerLink]="authRoute">Log in</a> to leave a comment.
+            </p>
+          }
+
+          <!-- List -->
+          @if (isCommentsLoading) {
+            <p class="details-comments-status">Loading comments...</p>
+          } @else if (commentsError) {
+            <p class="details-error">{{ commentsError }}</p>
+          } @else if (!comments.length) {
+            <p class="details-comments-status">No comments yet. Be the first!</p>
+          } @else {
+            <ul class="details-comments-list">
+              @for (comment of comments; track comment.id) {
+                <li class="details-comment-item">
+                  @if (editingCommentId === comment.id) {
+                    <!-- Inline edit form -->
+                    <div class="details-comment-edit-form">
+                      <textarea
+                        class="details-comment-input"
+                        [(ngModel)]="editCommentText"
+                        rows="3"
+                      ></textarea>
+                      @if (editCommentError) {
+                        <p class="details-error">{{ editCommentError }}</p>
+                      }
+                      <div class="details-comment-edit-actions">
+                        <button class="details-comment-save-btn" [disabled]="isSubmittingEdit" (click)="submitEditComment()">
+                          {{ isSubmittingEdit ? 'Saving...' : 'Save' }}
+                        </button>
+                        <button class="details-comment-cancel-btn" [disabled]="isSubmittingEdit" (click)="cancelEditComment()">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="details-comment-header">
+                      <p class="details-comment-user">{{ comment.username }}</p>
+                      @if (isCurrentUser(comment.userId)) {
+                        <button class="details-comment-edit-btn" (click)="startEditComment(comment)">
+                          <i class="material-icons">edit</i>
+                        </button>
+                      }
+                    </div>
+                    <p class="details-comment-text">{{ comment.text }}</p>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </section>
       </div>
     </div>
   }

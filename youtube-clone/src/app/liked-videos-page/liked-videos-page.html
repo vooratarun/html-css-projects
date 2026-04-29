@@ -57,13 +57,24 @@
               <a class="liked-video-title" [routerLink]="['/video', video.id]">{{ video.title }}</a>
               <span class="liked-channel">{{ video.channelName }}</span>
               <span class="liked-meta">{{ video.meta }}</span>
+              @if (video.category || video.categoryName) {
+                <span class="liked-category-badge">{{ video.category || video.categoryName }}</span>
+              }
             </div>
-            <button
-              class="liked-unlike-btn"
-              [disabled]="pendingUnlikeVideoId !== null"
-              (click)="onUnlikeVideo(video.id)">
-              {{ pendingUnlikeVideoId === video.id ? 'Removing...' : 'Unlike' }}
-            </button>
+            <div class="liked-video-actions">
+              <button
+                class="liked-category-btn"
+                (click)="openCategoryDialog(video)"
+                title="Change category">
+                <i class="material-icons">label</i>
+              </button>
+              <button
+                class="liked-unlike-btn"
+                [disabled]="pendingUnlikeVideoId !== null"
+                (click)="onUnlikeVideo(video.id)">
+                {{ pendingUnlikeVideoId === video.id ? 'Removing...' : 'Unlike' }}
+              </button>
+            </div>
           </div>
         </div>
       }
@@ -71,3 +82,50 @@
   }
 </div>
 
+<!-- Category Dialog Modal -->
+@if (isDialogOpen) {
+  <div class="category-dialog-overlay" (click)="closeCategoryDialog()">
+    <div class="category-dialog" (click)="$event.stopPropagation()">
+      <div class="category-dialog-header">
+        <h2>Select Category</h2>
+        <button class="category-dialog-close" (click)="closeCategoryDialog()">
+          <i class="material-icons">close</i>
+        </button>
+      </div>
+
+      <div class="category-dialog-content">
+        @if (selectedVideoForCategory) {
+          <div class="category-video-info">
+            <p class="category-video-title">{{ selectedVideoForCategory.title }}</p>
+          </div>
+        }
+
+        @if (categoryErrorMessage) {
+          <p class="category-error-message">{{ categoryErrorMessage }}</p>
+        }
+
+        <div class="category-form">
+          @if (isLoadingCategories) {
+            <p>Loading categories...</p>
+          } @else if (categories.length === 0) {
+            <p>No categories available</p>
+          } @else {
+            <select [(ngModel)]="selectedCategoryId" class="category-select">
+              <option [value]="null" disabled>Choose a category...</option>
+              @for (category of categories; track category.id) {
+                <option [value]="category.id">{{ category.name }}</option>
+              }
+            </select>
+          }
+        </div>
+      </div>
+
+      <div class="category-dialog-actions">
+        <button class="category-btn-cancel" (click)="closeCategoryDialog()">Cancel</button>
+        <button class="category-btn-submit" (click)="submitCategory()" [disabled]="isLoadingCategories">
+          Save Category
+        </button>
+      </div>
+    </div>
+  </div>
+}

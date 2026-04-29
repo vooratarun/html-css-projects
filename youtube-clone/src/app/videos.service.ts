@@ -28,6 +28,13 @@ type LikedVideoStatusApiResponse =
   providedIn: 'root'
 })
 export class VideosService {
+      private toApiVideoPayload(payload: VideoUploadPayload): VideoUploadPayload & { acategoryId: number } {
+        return {
+          ...payload,
+          acategoryId: payload.categoryId
+        };
+      }
+
   private readonly http = inject(HttpClient);
   private readonly videosApiUrl = 'http://localhost:3000/get-videos-paginated';
   private readonly searchVideosApiUrl = 'http://localhost:3000/search';
@@ -118,12 +125,12 @@ export class VideosService {
   }
 
   uploadVideo(payload: VideoUploadPayload): Observable<unknown> {
-    return this.http.post(this.uploadVideoApiUrl, payload);
+    return this.http.post(this.uploadVideoApiUrl, this.toApiVideoPayload(payload));
   }
 
 
   addVideo(payload : VideoUploadPayload): void {
-    this.http.post<VideoCardAdd>(`http://localhost:3000/add-video`, payload)
+    this.http.post<VideoCardAdd>(`http://localhost:3000/add-video`, this.toApiVideoPayload(payload))
       .subscribe({
         next: savedVid => this.add$.set(State.Builder<VideoCardAdd, HttpErrorResponse>().forSuccess(savedVid).build()),
         error: err => this.add$.set(State.Builder<VideoCardAdd, HttpErrorResponse>().forError(err).build())
@@ -131,7 +138,7 @@ export class VideosService {
   }
 
   updateVideo(id: number, payload: VideoUploadPayload): void {
-    this.http.put<VideoCardAdd>(`http://localhost:3000/update-video/${id}`, payload)
+    this.http.put<VideoCardAdd>(`http://localhost:3000/update-video/${id}`, this.toApiVideoPayload(payload))
       .subscribe({
         next: updatedVid => this.edit$.set(State.Builder<VideoCardAdd, HttpErrorResponse>().forSuccess(updatedVid).build()),
         error: err => this.edit$.set(State.Builder<VideoCardAdd, HttpErrorResponse>().forError(err).build())
@@ -278,6 +285,9 @@ export class VideosService {
       authorImageUrl: video.authorImageUrl ?? video.authorImage ?? '/profile.png',
       title: video.title ?? 'Untitled video',
       channelName: video.channelName ?? video.channel ?? 'Unknown channel',
+      categoryId: typeof video.categoryId === 'number' ? video.categoryId : undefined,
+      categoryName: video.categoryName ?? video.category,
+      category: video.category ?? video.categoryName,
       meta: video.meta ?? this.buildMeta(video)
     }));
   }
@@ -295,6 +305,9 @@ export class VideosService {
       authorImageUrl: rawVideo.authorImageUrl ?? rawVideo.authorImage ?? '/profile.png',
       title: rawVideo.title ?? 'Untitled video',
       channelName: rawVideo.channelName ?? rawVideo.channel ?? 'Unknown channel',
+      categoryId: typeof rawVideo.categoryId === 'number' ? rawVideo.categoryId : undefined,
+      categoryName: rawVideo.categoryName ?? rawVideo.category,
+      category: rawVideo.category ?? rawVideo.categoryName,
       meta: rawVideo.meta ?? this.buildMeta(rawVideo)
     };
   }

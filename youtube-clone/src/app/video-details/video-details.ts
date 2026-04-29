@@ -1,15 +1,18 @@
 import { Component, OnInit, effect, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
-import { ApiVideo, VideoCard } from '../video.model';
-import {VideosService} from '../videos.service';
+import { ApiVideo, ApiVideoComment, VideoCard, VideoComment } from '../video.model';
+import { VideosService } from '../videos.service';
 
 type VideoByIdApiResponse = ApiVideo | { data?: ApiVideo | null; video?: ApiVideo | null };
+type VideoCommentsApiResponse = ApiVideoComment[] | { data?: ApiVideoComment[]; comments?: ApiVideoComment[] };
 
 @Component({
   selector: 'app-video-details',
-  imports: [RouterLink],
+  imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './video-details.html',
   styleUrl: './video-details.css'
 })
@@ -26,6 +29,21 @@ export class VideoDetailsComponent implements OnInit {
   protected isLikeSubmitting = false;
   protected likeError = '';
   protected likeSuccess = '';
+  protected comments: VideoComment[] = [];
+  protected isCommentsLoading = false;
+  protected commentsError = '';
+
+  // create comment
+  protected newCommentText = '';
+  protected isPostingComment = false;
+  protected postCommentError = '';
+  protected postCommentSuccess = '';
+
+  // edit comment
+  protected editingCommentId: number | null = null;
+  protected editCommentText = '';
+  protected isSubmittingEdit = false;
+  protected editCommentError = '';
 
   private readonly videoService = inject(VideosService);
   private pendingLikeAction: 'LIKE' | 'UNLIKE' | null = null;
@@ -80,6 +98,10 @@ export class VideoDetailsComponent implements OnInit {
     return this.authService.isLoggedIn() ? 'Logout' : 'Login';
   }
 
+  protected get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!Number.isFinite(id) || id <= 0) {
@@ -100,12 +122,20 @@ export class VideoDetailsComponent implements OnInit {
               authorImageUrl: rawVideo.authorImageUrl ?? rawVideo.authorImage ?? '/profile.png',
               title: rawVideo.title ?? 'Untitled video',
               channelName: rawVideo.channelName ?? rawVideo.channel ?? 'Unknown channel',
+              categoryId: typeof rawVideo.categoryId === 'number' ? rawVideo.categoryId : undefined,
+              categoryName: rawVideo.categoryName ?? rawVideo.category,
+              category: rawVideo.category ?? rawVideo.categoryName,
               meta: rawVideo.meta ?? [rawVideo.views, rawVideo.publishedAt].filter(Boolean).join(' • ')
             }
           : null;
 
         if (this.video) {
           this.syncLikeStatus(this.video.id);
+          this.loadComments(this.video.id);
+        } else {
+          this.comments = [];
+          this.commentsError = '';
+          this.isCommentsLoading = false;
         }
 
         this.isLoading = false;
@@ -113,6 +143,9 @@ export class VideoDetailsComponent implements OnInit {
       error: () => {
         this.isLoading = false;
         this.video = null;
+        this.comments = [];
+        this.isCommentsLoading = false;
+        this.commentsError = '';
         this.errorMessage = 'Unable to load video details.';
       }
     });
@@ -159,6 +192,128 @@ export class VideoDetailsComponent implements OnInit {
       .subscribe((isLiked) => {
         this.isLiked = isLiked;
       });
+  }
+
+  protected isCurrentUser(userId: number): boolean {
+    return this.authService.currentUser()?.id === userId;
+  }
+
+  protected onPostComment(): void {
+    const videoId = this.video?.id;
+    const text = this.newCommentText.trim();
+
+    if (!this.authService.isLoggedIn()) {
+      this.postCommentError = 'You must be logged in to comment.';
+      return;
+    }
+
+    if (!text) {
+      this.postCommentError = 'Comment cannot be empty.';
+      return;
+    }
+
+    if (!videoId) {
+      return;
+    }
+
+    this.isPostingComment = true;
+    this.postCommentError = '';
+    this.postCommentSuccess = '';
+
+    this.http.post<ApiVideoComment>(`http://localhost:3000/videos/${videoId}/comments`, { text })
+      .subscribe({
+        next: (comment) => {
+          this.comments = [this.normalizeComment(comment, videoId), ...this.comments];
+          this.newCommentText = '';
+          this.isPostingComment = false;
+          this.postCommentSuccess = 'Comment posted.';
+        },
+        error: () => {
+          this.isPostingComment = false;
+          this.postCommentError = 'Failed to post comment. Please try again.';
+        }
+      });
+  }
+
+  protected startEditComment(comment: VideoComment): void {
+    this.editingCommentId = comment.id;
+    this.editCommentText = comment.text;
+    this.editCommentError = '';
+  }
+
+  protected cancelEditComment(): void {
+    this.editingCommentId = null;
+    this.editCommentText = '';
+    this.editCommentError = '';
+  }
+
+  protected submitEditComment(): void {
+    const videoId = this.video?.id;
+    const text = this.editCommentText.trim();
+
+    if (!text) {
+      this.editCommentError = 'Comment cannot be empty.';
+      return;
+    }
+
+    if (!videoId || this.editingCommentId === null) {
+      return;
+    }
+
+    this.isSubmittingEdit = true;
+    this.editCommentError = '';
+
+    this.http.put<ApiVideoComment>(
+      `http://localhost:3000/comments/${this.editingCommentId}`,
+      { text }
+    ).subscribe({
+      next: (updated) => {
+        const normalized = this.normalizeComment(updated, videoId);
+        this.comments = this.comments.map((c) =>
+          c.id === normalized.id ? normalized : c
+        );
+        this.isSubmittingEdit = false;
+        this.editingCommentId = null;
+        this.editCommentText = '';
+      },
+      error: () => {
+        this.isSubmittingEdit = false;
+        this.editCommentError = 'Failed to update comment. Please try again.';
+      }
+    });
+  }
+
+  private loadComments(videoId: number): void {    this.isCommentsLoading = true;
+    this.commentsError = '';
+    this.comments = [];
+
+    this.http.get<VideoCommentsApiResponse>(`http://localhost:3000/videos/${videoId}/comments`).subscribe({
+      next: (response) => {
+        const apiComments = Array.isArray(response)
+          ? response
+          : response.comments ?? response.data ?? [];
+
+        this.comments = apiComments.map((comment) => this.normalizeComment(comment, videoId));
+        this.isCommentsLoading = false;
+      },
+      error: () => {
+        this.isCommentsLoading = false;
+        this.comments = [];
+        this.commentsError = 'Unable to load comments.';
+      }
+    });
+  }
+
+  private normalizeComment(comment: ApiVideoComment, fallbackVideoId: number): VideoComment {
+    return {
+      id: comment.id,
+      videoId: typeof comment.videoId === 'number' ? comment.videoId : fallbackVideoId,
+      userId: typeof comment.userId === 'number' ? comment.userId : 0,
+      username: comment.username?.trim() || 'Unknown user',
+      text: comment.text?.trim() || '',
+      createdAt: comment.createdAt || '',
+      updatedAt: comment.updatedAt || ''
+    };
   }
 
   private extractVideo(response: VideoByIdApiResponse): ApiVideo | null {

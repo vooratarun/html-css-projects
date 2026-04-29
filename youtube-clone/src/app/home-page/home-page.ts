@@ -1,7 +1,11 @@
 import { Component, OnInit, effect, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../auth.service';
+import { CategoryService, CategoryOption } from '../category.service';
+import { HeaderComponent } from '../header/header';
 import { SidebarCategoryComponent } from '../sidebar-category/sidebar-category';
 import { VideoCard, VideoUploadPayload } from '../video.model';
 import { VideosService } from '../videos.service';
@@ -16,13 +20,14 @@ type SidebarCategory = {
 
 @Component({
   selector: 'app-home-page',
-  imports: [SidebarCategoryComponent, VideoFormComponent, RouterLink],
+  imports: [SidebarCategoryComponent, VideoFormComponent, RouterLink, CommonModule, FormsModule, HeaderComponent],
   templateUrl: './home-page.html',
   styleUrl: './home-page.css'
 })
 export class HomePageComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly videosService = inject(VideosService);
+  private readonly categoryService = inject(CategoryService);
 
   protected isSidebarVisible = false;
   protected searchQuery = '';
@@ -38,6 +43,13 @@ export class HomePageComponent implements OnInit {
   protected selectedVideoForEdit: VideoCard | null = null;
   protected likedVideoIds = new Set<number>();
   protected likeError = '';
+  protected categories: CategoryOption[] = [];
+  protected selectedCategoryId: number | null = null;
+  protected isLoadingCategories = true;
+  protected isCreateCategoryDialogOpen = false;
+  protected newCategoryName = '';
+  protected createCategoryError = '';
+  protected isCreatingCategory = false;
   protected readonly primarySidebarCategories: SidebarCategory[] = [
     { id: 1, icon: 'home', label: 'Home' },
     { id: 2, icon: 'local_fire_department', label: 'Trending' },
@@ -54,6 +66,7 @@ export class HomePageComponent implements OnInit {
 
   ngOnInit(): void {
     this.videosService.getAllAPI();
+    this.loadCategories();
   }
 
   constructor() {
@@ -195,6 +208,11 @@ export class HomePageComponent implements OnInit {
   }
 
   protected onDeleteVideo(video: VideoCard): void {
+    if (!this.canDeleteVideos) {
+      this.uploadVideoError = 'Only admin users can delete videos.';
+      return;
+    }
+
     const confirmed = window.confirm(`Are you sure you want to delete "${video.title}"?`);
     if (!confirmed) {
       return;
@@ -212,6 +230,7 @@ export class HomePageComponent implements OnInit {
   }
 
   protected get filteredVideos(): VideoCard[] {
+    // Videos are already filtered by the API call, so return all
     return this.videos;
   }
 
@@ -232,6 +251,45 @@ export class HomePageComponent implements OnInit {
     this.isLoadingMore = false;
     this.videosError = '';
     this.videosService.searchVideosAPI(this.searchQuery);
+  }
+
+  protected onCategorySelect(categoryId: number | null): void {
+    this.selectedCategoryId = categoryId;
+    this.isLoadingVideos = true;
+    this.videosError = '';
+
+    if (categoryId === null) {
+      // Load all videos
+      this.videosService.getAllAPI();
+    } else {
+      // Load videos for specific category
+      this.categoryService.getVideosByCategory(categoryId).subscribe({
+        next: (response) => {
+          this.videos = response.videos || [];
+          this.isLoadingVideos = false;
+          this.videosError = '';
+          this.syncLikedStatuses(this.videos);
+        },
+        error: () => {
+          this.isLoadingVideos = false;
+          this.videos = [];
+          this.videosError = 'Failed to load videos for this category.';
+        }
+      });
+    }
+  }
+
+  private loadCategories(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.isLoadingCategories = false;
+      },
+      error: () => {
+        this.categories = [];
+        this.isLoadingCategories = false;
+      }
+    });
   }
 
   protected onLoadMoreVideos(): void {
@@ -257,6 +315,10 @@ export class HomePageComponent implements OnInit {
 
   protected get authUsername(): string {
     return this.authService.currentUser()?.username ?? 'Guest';
+  }
+
+  protected get canDeleteVideos(): boolean {
+    return this.authService.isAdmin();
   }
 
   protected toggleSidebar(): void {
@@ -287,6 +349,50 @@ export class HomePageComponent implements OnInit {
         }
       });
       this.likedVideoIds = likedIds;
+    });
+  }
+
+  protected openCreateCategoryDialog(): void {
+    this.isCreateCategoryDialogOpen = true;
+    this.newCategoryName = '';
+    this.createCategoryError = '';
+  }
+
+  protected closeCreateCategoryDialog(): void {
+    this.isCreateCategoryDialogOpen = false;
+    this.newCategoryName = '';
+    this.createCategoryError = '';
+  }
+
+  protected submitCreateCategory(): void {
+    const trimmedName = this.newCategoryName.trim();
+
+    if (!trimmedName) {
+      this.createCategoryError = 'Please enter a category name';
+      return;
+    }
+
+    if (this.categories.some(cat => cat.name.toLowerCase() === trimmedName.toLowerCase())) {
+      this.createCategoryError = 'This category already exists';
+      return;
+    }
+
+    this.isCreatingCategory = true;
+    this.createCategoryError = '';
+
+    this.categoryService.createCategory({
+      name: trimmedName,
+      description: `${trimmedName} category`
+    }).subscribe({
+      next: (newCategory) => {
+        this.categories = [...this.categories, newCategory];
+        this.isCreatingCategory = false;
+        this.closeCreateCategoryDialog();
+      },
+      error: (err) => {
+        this.isCreatingCategory = false;
+        this.createCategoryError = err?.error?.message || 'Failed to create category. Please try again.';
+      }
     });
   }
 }

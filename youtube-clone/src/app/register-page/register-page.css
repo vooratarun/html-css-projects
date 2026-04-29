@@ -41,6 +41,13 @@
   border-radius: 8px;
 }
 
+.auth-card select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+}
+
 .auth-card button {
   border: none;
   border-radius: 8px;
@@ -55,13 +62,13 @@
   margin-bottom: 0;
 }
 
-.auth-link {
-  display: inline-block;
-}
-
 .auth-links {
   margin-top: 16px;
   display: grid;
   gap: 6px;
+}
+
+.auth-link {
+  display: inline-block;
 }
 

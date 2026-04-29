@@ -22,6 +22,18 @@
   </label>
 
   <label>
+    Category
+    <select formControlName="categoryId" [disabled]="isLoadingCategories">
+      @if (isLoadingCategories) {
+        <option [ngValue]="0">Loading categories...</option>
+      }
+      @for (category of categories; track category.id) {
+        <option [ngValue]="category.id">{{ category.name }}</option>
+      }
+    </select>
+  </label>
+
+  <label>
     Meta (views and date)
     <input type="text" formControlName="meta" placeholder="10K views • 2 days ago" />
   </label>

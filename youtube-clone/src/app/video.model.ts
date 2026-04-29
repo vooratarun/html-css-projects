@@ -4,6 +4,9 @@ export type VideoCard = {
   authorImageUrl: string;
   title: string;
   channelName: string;
+  category?: string;
+  categoryId?: number;
+  categoryName?: string;
   meta: string;
 };
 
@@ -16,11 +19,27 @@ export type ApiVideo = Partial<VideoCard> & {
   publishedAt?: string;
 };
 
+export type VideoComment = {
+  id: number;
+  videoId: number;
+  userId: number;
+  username: string;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApiVideoComment = Partial<VideoComment> & {
+  id: number;
+};
+
 export interface VideoCardAdd {
   thumbnailUrl: string;
   authorImageUrl: string;
   title: string;
   channelName: string;
+  categoryId: number;
+  categoryName: string;
   meta: string;
 }
 

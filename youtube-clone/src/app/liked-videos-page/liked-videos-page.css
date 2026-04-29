@@ -210,6 +210,7 @@
   flex-direction: column;
   gap: 2px;
   overflow: hidden;
+  flex: 1;
 }
 
 .liked-video-title {
@@ -237,6 +238,49 @@
   text-overflow: ellipsis;
 }
 
+.liked-category-badge {
+  display: inline-block;
+  background-color: #f0f0f0;
+  color: #0f0f0f;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  width: fit-content;
+}
+
+.liked-video-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-left: auto;
+}
+
+.liked-category-btn {
+  border: none;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #e8e8e8;
+  color: #0f0f0f;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s;
+  min-width: fit-content;
+}
+
+.liked-category-btn:hover {
+  background: #d0d0d0;
+}
+
+.liked-category-btn .material-icons {
+  font-size: 16px !important;
+}
+
 .liked-unlike-btn {
   margin-left: auto;
   align-self: flex-start;
@@ -256,6 +300,167 @@
 
 .liked-unlike-btn:disabled {
   opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Category Dialog Modal */
+.category-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.category-dialog {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.category-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.category-dialog-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: #0f0f0f;
+}
+
+.category-dialog-close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #606060;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.category-dialog-close:hover {
+  background: #f0f0f0;
+  color: #0f0f0f;
+}
+
+.category-dialog-close .material-icons {
+  font-size: 24px !important;
+}
+
+.category-dialog-content {
+  padding: 24px;
+}
+
+.category-video-info {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.category-video-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f0f0f;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+}
+
+.category-error-message {
+  color: #b71c1c;
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  padding: 12px;
+  background: #ffebee;
+  border-radius: 6px;
+}
+
+.category-form {
+  margin-bottom: 24px;
+}
+
+.category-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d3d3d3;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+  color: #0f0f0f;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.category-select:hover {
+  border-color: #0f0f0f;
+}
+
+.category-select:focus {
+  outline: none;
+  border-color: #1565c0;
+  box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.1);
+}
+
+.category-dialog-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  justify-content: flex-end;
+}
+
+.category-btn-cancel {
+  padding: 10px 20px;
+  border: 1px solid #d3d3d3;
+  border-radius: 6px;
+  background: #fff;
+  color: #0f0f0f;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.category-btn-cancel:hover {
+  background: #f0f0f0;
+  border-color: #0f0f0f;
+}
+
+.category-btn-submit {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #1565c0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.category-btn-submit:hover:not(:disabled) {
+  background: #1040a2;
+}
+
+.category-btn-submit:disabled {
+  background: #ccc;
   cursor: not-allowed;
 }
 

@@ -1,33 +1,12 @@
 <!-- Header Starts -->
-<div class="header">
-  <div class="header__left">
-    <i id="menu" class="material-icons" (click)="toggleSidebar()">menu</i>
-    <img src="https://cdn.mos.cms.futurecdn.net/8gzcr6RpGStvZFA2qRt4v6.jpg" alt="" />
-  </div>
-
-  <div class="header__search">
-    <form action="" (submit)="$event.preventDefault()">
-      <input
-        type="text"
-        placeholder="Search"
-        [value]="searchQuery"
-        (input)="onSearchInput($event)"
-      />
-      <button><i class="material-icons">search</i></button>
-    </form>
-  </div>
-
-  <div class="header__icons">
-    <i class="material-icons display-this">search</i>
-    <i class="material-icons">videocam</i>
-    <i class="material-icons">apps</i>
-    <i class="material-icons">notifications</i>
-    <a class="header__auth-link" [routerLink]="authRoute">
-      <i class="material-icons display-this">account_circle</i>
-      <span>{{ authLabel }} ({{ authUsername }})</span>
-    </a>
-  </div>
-</div>
+<app-header
+  [searchQuery]="searchQuery"
+  [authRoute]="authRoute"
+  [authLabel]="authLabel"
+  [authUsername]="authUsername"
+  (menuToggle)="toggleSidebar()"
+  (searchInput)="onSearchInput($event)"
+></app-header>
 <!-- Header Ends -->
 
 <!-- Main Body Starts -->
@@ -77,6 +56,37 @@
       <p class="upload-message error">{{ likeError }}</p>
     }
 
+    <!-- Category Filter Section -->
+    <div class="category-filter">
+      <div class="category-header">
+        <h2>Categories</h2>
+        <button class="create-category-btn" (click)="openCreateCategoryDialog()" title="Create new category">
+          <i class="material-icons">add</i>
+          Create
+        </button>
+      </div>
+      @if (isLoadingCategories) {
+        <p>Loading categories...</p>
+      } @else {
+        <div class="category-buttons">
+          <button
+            class="category-btn"
+            [class.active]="selectedCategoryId === null"
+            (click)="onCategorySelect(null)">
+            All
+          </button>
+          @for (category of categories; track category.id) {
+            <button
+              class="category-btn"
+              [class.active]="selectedCategoryId === category.id"
+              (click)="onCategorySelect(category.id)">
+              {{ category.name }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+
     <h1>Recommended</h1>
 
     <div class="videos__container">
@@ -92,23 +102,30 @@
               <button class="edit-btn" (click)="onEditVideo(video)" [disabled]="isDeletingVideo" title="Edit">
                 <i class="material-icons">edit</i>
               </button>
-              <button class="delete-btn" (click)="onDeleteVideo(video)" [disabled]="isDeletingVideo" title="Delete">
-                <i class="material-icons">delete</i>
-              </button>
+              @if (canDeleteVideos) {
+                <button class="delete-btn" (click)="onDeleteVideo(video)" [disabled]="isDeletingVideo" title="Delete">
+                  <i class="material-icons">delete</i>
+                </button>
+              }
               <button class="like-btn" (click)="onLikeVideo(video)" [class.liked]="isVideoLiked(video.id)" title="Like">
                 <i class="material-icons">{{ isVideoLiked(video.id) ? 'thumb_up' : 'thumb_up_off_alt' }}</i>
               </button>
             </div>
-            <div class="video__details">
-              <div class="author">
-                <img [src]="video.authorImageUrl" [alt]="video.channelName" />
-              </div>
-              <div class="title">
-                <h3><a class="video-title-link" [routerLink]="['/video', video.id]">{{ video.title }}</a></h3>
-                <a href="">{{ video.channelName }}</a>
-                <span>{{ video.meta }}</span>
-              </div>
-            </div>
+             <div class="video__details">
+               <div class="author">
+                 <img [src]="video.authorImageUrl" [alt]="video.channelName" />
+               </div>
+               <div class="title">
+                 <h3><a class="video-title-link" [routerLink]="['/video', video.id]">{{ video.title }}</a></h3>
+                 <a href="">{{ video.channelName }}</a>
+                 <div class="video-meta">
+                   <span>{{ video.meta }}</span>
+                   @if (video.category || video.categoryName) {
+                     <span class="video-category">{{ video.category || video.categoryName }}</span>
+                   }
+                 </div>
+               </div>
+             </div>
           </div>
         }
 
@@ -127,3 +144,44 @@
 </div>
 <!-- Main Body Ends -->
 
+<!-- Create Category Dialog Modal -->
+@if (isCreateCategoryDialogOpen) {
+  <div class="create-category-overlay" (click)="closeCreateCategoryDialog()">
+    <div class="create-category-dialog" (click)="$event.stopPropagation()">
+      <div class="create-category-header">
+        <h2>Create New Category</h2>
+        <button class="create-category-close" (click)="closeCreateCategoryDialog()">
+          <i class="material-icons">close</i>
+        </button>
+      </div>
+
+      <div class="create-category-content">
+        @if (createCategoryError) {
+          <p class="create-category-error">{{ createCategoryError }}</p>
+        }
+
+        <div class="create-category-form">
+          <label for="categoryNameInput">Category Name</label>
+          <input
+            id="categoryNameInput"
+            type="text"
+            [(ngModel)]="newCategoryName"
+            placeholder="Enter category name"
+            (keyup.enter)="submitCreateCategory()"
+            class="category-input"
+          />
+        </div>
+      </div>
+
+      <div class="create-category-actions">
+        <button class="category-cancel-btn" (click)="closeCreateCategoryDialog()">Cancel</button>
+        <button
+          class="category-create-btn"
+          (click)="submitCreateCategory()"
+          [disabled]="isCreatingCategory">
+          {{ isCreatingCategory ? 'Creating...' : 'Create Category' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
