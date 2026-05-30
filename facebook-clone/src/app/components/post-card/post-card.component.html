@@ -15,21 +15,16 @@
     <img [src]="post.imageUrl" [alt]="post.message" />
   </div>
 
-  <div class="post__options">
-    <div class="post__option">
-      <span class="material-icons">thumb_up</span>
-      <p>Like</p>
+    <div class="post__options">
+        @for (option of postOptions; track option.label) {
+            <div class="post__option">
+              <span class="material-icons">
+                {{ option.icon }}
+              </span>
+                <p>{{ option.label }}</p>
+            </div>
+        }
     </div>
 
-    <div class="post__option">
-      <span class="material-icons">chat_bubble_outline</span>
-      <p>Comment</p>
-    </div>
-
-    <div class="post__option">
-      <span class="material-icons">near_me</span>
-      <p>Share</p>
-    </div>
-  </div>
 </div>
 

@@ -121,6 +121,11 @@ body {
   border-radius: 10px;
 }
 
+.sidebarRow--active {
+  background-color: #dfe6f2;
+  border-radius: 10px;
+}
+
 .sidebarRow h4 {
   margin-left: 20px;
   font-weight: 600;
@@ -142,6 +147,37 @@ body {
   margin-right: 10px;
   transition: transform 100ms ease-in;
   cursor: pointer;
+}
+
+.story:hover .story__deleteButton {
+  opacity: 1;
+}
+
+.story__deleteButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease-in, background-color 120ms ease-in;
+}
+
+.story__deleteButton:hover {
+  background-color: rgba(220, 53, 69, 0.95);
+}
+
+.story__deleteButton .material-icons {
+  font-size: 18px;
 }
 
 .story:hover {
@@ -194,7 +230,7 @@ body {
   background-color: white;
   border-radius: 15px;
   box-shadow: 0 5px 7px -7px rgba(0, 0, 0, 0.75);
-  width: 100%;
+  width: 900px;
 }
 
 .messageSender__top {

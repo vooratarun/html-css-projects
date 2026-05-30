@@ -10,23 +10,41 @@
     </div>
   </div>
 
-  <div class="header__middle">
-    <div class="header__option active"><span class="material-icons">home</span></div>
-    <div class="header__option"><span class="material-icons">flag</span></div>
-    <div class="header__option"><span class="material-icons">subscriptions</span></div>
-    <div class="header__option"><span class="material-icons">storefront</span></div>
-    <div class="header__option"><span class="material-icons">supervised_user_circle</span></div>
-  </div>
+<!--  <div class="header__middle">-->
+<!--    <div class="header__option active"><span class="material-icons">home</span></div>-->
+<!--    <div class="header__option"><span class="material-icons">flag</span></div>-->
+<!--    <div class="header__option"><span class="material-icons">subscriptions</span></div>-->
+<!--    <div class="header__option"><span class="material-icons">storefront</span></div>-->
+<!--    <div class="header__option"><span class="material-icons">supervised_user_circle</span></div>-->
+<!--  </div>-->
+
+
+    <div class="header__middle">
+        @for(item of menuItems; track item.icon) {
+            <div
+                    class="header__option"
+                    [class.active]="item.active">
+                  <span class="material-icons">
+                    {{ item.icon }}
+                  </span>
+            </div>
+        }
+    </div>
 
   <div class="header__right">
     <div class="header__info">
       <img class="user__avatar" [src]="avatar" alt="User avatar" />
       <h4>Somanath Goudar</h4>
     </div>
-    <span class="material-icons">add</span>
-    <span class="material-icons">forum</span>
-    <span class="material-icons">notifications_active</span>
-    <span class="material-icons">expand_more</span>
+
+      <div>
+          @for(icon of icons; track icon) {
+              <span class="material-icons">
+              {{ icon }}
+              </span>
+          }
+      </div>
+
   </div>
 </div>
 

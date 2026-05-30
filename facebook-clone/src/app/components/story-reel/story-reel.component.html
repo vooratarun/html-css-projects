@@ -1,11 +1,10 @@
 <div class="storyReel">
-  <div
-    class="story"
-    *ngFor="let story of stories"
-    [style.background-image]="'url(' + story.backgroundImage + ')'"
-  >
-    <img class="user__avatar story__avatar" [src]="story.avatar" [alt]="story.title + ' avatar'" />
-    <h4>{{ story.title }}</h4>
-  </div>
+    @for (story of stories; track story.id) {
+        <app-story
+                [story]="story"
+                (storyClicked)="handleStoryClick($event)"
+                (storyDeleted)="handleStoryDelete($event)">
+        </app-story>
+    }
 </div>
 

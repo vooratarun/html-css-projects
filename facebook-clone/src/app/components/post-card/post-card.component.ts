@@ -10,5 +10,20 @@ import { Post } from '../../models/feed.models';
 })
 export class PostCardComponent {
   @Input({ required: true }) post!: Post;
+
+  postOptions = [
+    {
+      icon: 'thumb_up',
+      label: 'Like'
+    },
+    {
+      icon: 'chat_bubble_outline',
+      label: 'Comment'
+    },
+    {
+      icon: 'near_me',
+      label: 'Share'
+    }
+  ];
 }
 

@@ -12,30 +12,40 @@ import { Post, Story } from '../../models/feed.models';
   templateUrl: './feed.component.html'
 })
 export class FeedComponent {
-  readonly stories: Story[] = [
+  stories: Story[] = [
     {
       backgroundImage:
         'https://images.unsplash.com/photo-1527082395-e939b847da0d?ixlib=rb-1.2.1&w=1000&q=80',
       avatar: 'https://www.shareicon.net/data/2016/05/24/770139_man_512x512.png',
-      title: 'Somanath Goudar'
+      title: 'Somanath Goudar',
+      id: 1
     },
     {
       backgroundImage: 'https://cellularnews.com/wp-content/uploads/2020/04/Delete-photo-337x600.jpg',
       avatar: 'https://image.freepik.com/free-vector/businessman-avatar-cartoon-character-profile_18591-50584.jpg',
-      title: 'Somanath Goudar'
+      title: 'Somanath Goudar',
+      id: 2
+
+
     },
     {
       backgroundImage:
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBHC2s4NFdzXEsVzvBPGjkrSePQa-8XFuNtQ&usqp=CAU',
       avatar: 'https://www.shareicon.net/data/2016/05/24/770139_man_512x512.png',
-      title: 'Somanath Goudar'
+      title: 'Somanath Goudar',
+      id: 3
     },
     {
       backgroundImage: 'https://wallpapercave.com/wp/wp7357832.jpg',
       avatar: 'https://www.shareicon.net/data/2016/05/24/770139_man_512x512.png',
-      title: 'Somanath Goudar'
+      title: 'Somanath Goudar',
+      id:4
     }
   ];
+
+  removeStory(storyToRemove: Story) {
+    this.stories = this.stories.filter(story => story.id !== storyToRemove.id);
+  }
 
   readonly posts: Post[] = [
     {

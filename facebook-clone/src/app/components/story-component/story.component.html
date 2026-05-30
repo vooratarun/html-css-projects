@@ -1,0 +1,17 @@
+<div
+        class="story"
+        [style.background-image]="'url(' + story.backgroundImage + ')'"
+        (click)="onStoryClick()"
+>
+    <button class="story__deleteButton" type="button" aria-label="Delete story" (click)="onDeleteClick($event)">
+        <span class="material-icons">delete</span>
+    </button>
+
+    <img
+            class="user__avatar story__avatar"
+            [src]="story.avatar"
+            [alt]="story.title + ' avatar'"
+    />
+
+    <h4>{{ story.title }}</h4>
+</div>

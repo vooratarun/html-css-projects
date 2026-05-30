@@ -4,6 +4,7 @@ import { HeaderComponent } from './components/header/header.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { EmailRow, SectionItem, SidebarItem } from './models';
 
+// @ts-ignore
 @Component({
   selector: 'app-root',
   imports: [HeaderComponent, SidebarComponent, EmailListComponent],

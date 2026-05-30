@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { SidebarItem } from '../../models';
 
+// @ts-ignore
 @Component({
   selector: 'app-sidebar',
   imports: [],

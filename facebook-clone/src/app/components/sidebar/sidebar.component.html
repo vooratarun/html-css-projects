@@ -4,9 +4,22 @@
     <h4>Somanath Goudar</h4>
   </div>
 
-  <div class="sidebarRow" *ngFor="let item of items">
-    <span class="material-icons">{{ item.icon }}</span>
-    <h4>{{ item.label }}</h4>
-  </div>
+<!--  <div class="sidebarRow" *ngFor="let item of items">-->
+<!--    <span class="material-icons">{{ item.icon }}</span>-->
+<!--    <h4>{{ item.label }}</h4>-->
+<!--  </div>-->
+
+    @for (item of items; track item.label) {
+        <div class="sidebarRow"
+             [class.sidebarRow--active]="selectedTitle === item.label"
+             (click)="onItemClick(item)"
+        >
+            <span class="material-icons">{{ item.icon }}</span>
+            <h4>{{ item.label }}</h4>
+        </div>
+    }
+
+    {{selectedTitle}}
+
 </div>
 
