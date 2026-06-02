@@ -27,6 +27,8 @@
         <button type="button" class="tweetBox__tweetButton">Tweet</button>
       </form>
     </section>
+
+
     <article *ngFor="let post of posts; trackBy: trackByPost" class="post">
       <div class="post__avatar">
         <img [src]="post.avatar" [alt]="post.displayName + ' avatar'" />
@@ -54,6 +56,8 @@
         </div>
       </div>
     </article>
+
+
   </section>
   <aside class="widgets" aria-label="Search and trends">
     <div class="widgets__input">

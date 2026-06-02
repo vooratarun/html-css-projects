@@ -1,7 +1,10 @@
 <app-navbar></app-navbar>
 <app-banner></app-banner>
 
-<ng-container *ngFor="let row of movieRows">
-  <app-movie-row [title]="row.title" [posters]="row.posters" [isLarge]="row.isLarge"></app-movie-row>
-</ng-container>
+@for (row of movieRows; track row.title; let i = $index) {
+    <app-movie-row
+            [title]="row.title">
+    </app-movie-row>
 
+    <span>{{ i }}</span>
+}

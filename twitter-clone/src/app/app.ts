@@ -26,6 +26,7 @@ type Post = {
   verified: boolean;
 };
 
+// @ts-ignore
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -80,7 +81,7 @@ export class App implements AfterViewInit {
     return `${index}-${post.username}-${post.image}`;
   }
 
-  private loadTwitterWidgets(): void {
+  private  loadTwitterWidgets(): void {
     const existingScript = this.document.getElementById('twitter-wjs');
 
     if (existingScript) {

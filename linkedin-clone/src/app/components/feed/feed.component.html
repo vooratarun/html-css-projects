@@ -11,7 +11,8 @@
       <div class="feed__inputOptions">
           <div
                   class="inputOption"
-                  *ngFor="let option of feedOptions">
+                  *ngFor="let option of feedOptions"
+                  (click)="onFeedOptionClick(option)">
               <i
                       class="material-icons"
                       [style.color]="option.color"
@@ -38,7 +39,8 @@
 
       <div class="feed__inputOptions">
           @for (option of inputOptions; track option.label) {
-              <div class="inputOption">
+              <div class="inputOption"
+                   (click)="onInputOptionClick(option)">
                   <i
                           class="material-icons"
                           [style.color]="option.color"
@@ -49,6 +51,7 @@
                   <h4>{{ option.label }}</h4>
               </div>
           }
-      </div>  </div>
+      </div>
+  </div>
 </div>
 

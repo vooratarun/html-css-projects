@@ -39,6 +39,13 @@ export class FeedComponent {
     { icon: 'calendar_view_day', label: 'Write Article', color: '#7fc15e' }
   ];
 
+  onFeedOptionClick(option: any): void {
+    alert(`${option.label} clicked`);
+  }
+
+  onInputOptionClick(option: any): void {
+    alert(`${option.label} clicked`);
+  }
 
   trackByPostId(index: number, post: FeedPost): number {
     return post.id;
